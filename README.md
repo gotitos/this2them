@@ -1,6 +1,6 @@
 # This2Them 
 
-##Cinephile's Hardest Game
+#Cinephile's Hardest Game
 
 Can you connect the dots between two actors? 
 
