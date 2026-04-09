@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>This2Them — The Actor Connection Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f; --surface: #13131a; --surface2: #1c1c28; --border: #2a2a3a;
+    --muted: #6b6b8a; --text: #e8e8f0; --text-dim: #9999b5;
+    --gold: #f5c842; --red: #e85d4a; --green: #4acd8d; --blue: #5b8af5; --purple: #9b6df5;
+    --easy: #4acd8d; --medium: #f5a742; --hard: #e85d4a;
+    --film-strip: repeating-linear-gradient(90deg,transparent 0,transparent 8px,#1a1a26 8px,#1a1a26 12px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:.4}
+  body::after{content:'';position:fixed;top:-30vh;left:50%;transform:translateX(-50%);width:80vw;height:60vh;background:radial-gradient(ellipse,rgba(245,200,66,.06) 0%,transparent 70%);pointer-events:none}
+
+  .film-strip-bar{height:28px;background:var(--surface2);border-top:2px solid var(--border);border-bottom:2px solid var(--border);position:relative;overflow:hidden;display:flex;align-items:center}
+  .film-strip-bar::before{content:'';position:absolute;inset:0;background:var(--film-strip)}
+  .sprocket-holes{display:flex;gap:20px;padding:0 16px;position:relative;z-index:1}
+  .sprocket-holes span{width:14px;height:10px;background:var(--bg);border-radius:2px;display:block;flex-shrink:0}
+
+  header{text-align:center;padding:48px 24px 32px}
+  .logo{margin:32px 0 8px;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .logo-title{font-family:'Playfair Display',serif;font-size:clamp(42px,8vw,72px);font-weight:900;letter-spacing:-.03em;color:var(--gold);text-shadow:0 0 60px rgba(245,200,66,.3),0 2px 4px rgba(0,0,0,.5);line-height:1}
+  .logo-sub{font-size:11px;font-weight:500;letter-spacing:.25em;text-transform:uppercase;color:var(--muted)}
+
+  .container{max-width:860px;margin:0 auto;padding:0 20px 80px}
+  .screen{display:none}
+  .screen.active{display:block;animation:screenIn .4s cubic-bezier(0,0,.2,1) both}
+  @keyframes screenIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+  /* HOME */
+  .tagline{text-align:center;color:var(--text-dim);font-size:16px;margin-bottom:32px;line-height:1.6}
+  .tagline strong{color:var(--gold)}
+
+
+
+  /* DIFFICULTY */
+  .difficulty-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px}
+  .diff-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 20px;cursor:pointer;transition:all .25s cubic-bezier(.34,1.56,.64,1);text-align:center;position:relative;overflow:hidden}
+  .diff-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .25s;border-radius:16px}
+  .diff-card.easy::before{background:radial-gradient(ellipse at top,rgba(74,205,141,.12),transparent 70%)}
+  .diff-card.medium::before{background:radial-gradient(ellipse at top,rgba(245,167,66,.12),transparent 70%)}
+  .diff-card.hard::before{background:radial-gradient(ellipse at top,rgba(232,93,74,.12),transparent 70%)}
+  .diff-card:hover{transform:translateY(-4px) scale(1.02)}
+  .diff-card:hover::before{opacity:1}
+  .diff-card.easy:hover{border-color:var(--easy);box-shadow:0 8px 32px rgba(74,205,141,.15)}
+  .diff-card.medium:hover{border-color:var(--medium);box-shadow:0 8px 32px rgba(245,167,66,.15)}
+  .diff-card.hard:hover{border-color:var(--hard);box-shadow:0 8px 32px rgba(232,93,74,.15)}
+  .diff-card.selected.easy{border-color:var(--easy);box-shadow:0 0 0 2px rgba(74,205,141,.3)}
+  .diff-card.selected.medium{border-color:var(--medium);box-shadow:0 0 0 2px rgba(245,167,66,.3)}
+  .diff-card.selected.hard{border-color:var(--hard);box-shadow:0 0 0 2px rgba(232,93,74,.3)}
+  .diff-icon{font-size:32px;margin-bottom:12px;display:block}
+  .diff-name{font-family:'Playfair Display',serif;font-size:20px;font-weight:700}
+  .easy .diff-name{color:var(--easy)} .medium .diff-name{color:var(--medium)} .hard .diff-name{color:var(--hard)}
+
+  .start-btn{width:100%;padding:18px;background:var(--gold);color:#0a0a0f;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;letter-spacing:.05em;cursor:pointer;transition:all .2s cubic-bezier(.34,1.56,.64,1);text-transform:uppercase}
+  .start-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 32px rgba(245,200,66,.35);background:#f7d55a}
+  .start-btn:disabled{opacity:.4;cursor:not-allowed}
+
+  .how-steps{display:flex;flex-direction:column;gap:12px}
+  .how-step{display:flex;align-items:flex-start;gap:14px;font-size:14px;color:var(--text-dim);line-height:1.5}
+  .how-step-num{min-width:24px;height:24px;background:var(--surface2);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--gold);margin-top:1px;flex-shrink:0}
+
+  /* ICON BUTTONS */
+  .icon-btn-row{display:flex;justify-content:flex-end;gap:8px;margin-bottom:20px}
+  .icon-btn{background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.5);color:var(--gold);width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'DM Sans',sans-serif;flex-shrink:0}
+  .icon-btn:hover{background:var(--gold);color:#0a0a0f;border-color:var(--gold);box-shadow:0 0 16px rgba(245,200,66,.4)}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal-overlay.open{display:flex;animation:screenIn .2s ease both}
+  .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
+  .modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;line-height:1;padding:4px}
+  .modal-close:hover{color:var(--text)}
+  .modal-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--gold);margin-bottom:20px}
+  .setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)}
+  .setting-row:last-child{border-bottom:none}
+  .setting-row.column{flex-direction:column;align-items:flex-start;gap:10px}
+  .setting-label{font-size:14px;font-weight:600;color:var(--text)}
+  .setting-desc{font-size:11px;color:var(--muted);margin-top:2px}
+  .toggle-switch{position:relative;width:44px;height:24px;flex-shrink:0}
+  .toggle-switch input{opacity:0;width:0;height:0;position:absolute}
+  .toggle-track{position:absolute;inset:0;background:var(--border);border-radius:24px;cursor:pointer;transition:background .2s}
+  .toggle-switch input:checked + .toggle-track{background:var(--gold)}
+  .toggle-track::after{content:'';position:absolute;left:3px;top:3px;width:18px;height:18px;background:white;border-radius:50%;transition:transform .2s}
+  .toggle-switch input:checked + .toggle-track::after{transform:translateX(20px)}
+  .era-group{display:flex;gap:8px;flex-wrap:wrap}
+  .era-btn{padding:5px 14px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .2s}
+  .era-btn.active{background:rgba(245,200,66,.15);border-color:var(--gold);color:var(--gold)}
+
+  /* GAME HEADER */
+  .game-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:14px}
+  .game-meta{display:flex;align-items:center;gap:16px}
+  .diff-badge{padding:4px 12px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+  .diff-badge.easy{background:rgba(74,205,141,.15);color:var(--easy);border:1px solid rgba(74,205,141,.3)}
+  .diff-badge.medium{background:rgba(245,167,66,.15);color:var(--medium);border:1px solid rgba(245,167,66,.3)}
+  .diff-badge.hard{background:rgba(232,93,74,.15);color:var(--hard);border:1px solid rgba(232,93,74,.3)}
+  .hops-display{font-family:'DM Mono',monospace;font-size:13px;color:var(--text-dim)}
+  .hops-display span{color:var(--gold);font-weight:600}
+  .quit-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
+  .quit-btn:hover{border-color:var(--red);color:var(--red)}
+
+  /* CHAIN */
+  .chain-container{margin-bottom:28px}
+  .chain-label{font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .chain{display:flex;flex-wrap:wrap;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;min-height:68px;gap:0;overflow-x:auto}
+  .chain-node{display:flex;align-items:center;animation:nodeIn .3s cubic-bezier(.34,1.56,.64,1) both}
+  @keyframes nodeIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+  .chain-actor{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--text);white-space:nowrap}
+  .chain-actor.start{border-color:var(--gold);color:var(--gold)}
+  .chain-actor.end{border-color:var(--purple);color:var(--purple)}
+  .chain-actor.current{border-color:var(--blue);color:var(--blue);box-shadow:0 0 0 2px rgba(91,138,245,.2)}
+  .chain-movie{display:flex;flex-direction:column;align-items:center;padding:0 10px}
+  .chain-movie-label{font-size:10px;color:var(--muted);font-style:italic;text-align:center;max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chain-arrow{color:var(--muted);font-size:16px;flex-shrink:0;padding:0 2px}
+
+  /* TARGET */
+  .target-actor{display:flex;align-items:center;gap:8px;background:rgba(155,109,245,.08);border:1px dashed rgba(155,109,245,.4);border-radius:10px;padding:10px 16px;font-size:13px;color:var(--purple);font-weight:600;animation:pulseTarget 2.5s ease infinite;margin-bottom:24px}
+  .target-actor .label{font-size:10px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+  @keyframes pulseTarget{0%,100%{box-shadow:0 0 0 0 rgba(155,109,245,.4)}50%{box-shadow:0 0 0 8px rgba(155,109,245,0)}}
+
+  /* INPUT */
+  .input-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px}
+  .input-section h3{font-family:'Playfair Display',serif;font-size:16px;color:var(--text);margin-bottom:4px}
+  .input-hint{font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+  .input-row{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end}
+  .input-group{display:flex;flex-direction:column;gap:6px}
+  .input-group label{font-size:11px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+  .input-wrap{position:relative}
+  .game-input{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;transition:all .15s;outline:none}
+  .game-input::placeholder{color:var(--muted)}
+  .game-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(91,138,245,.15)}
+  .suggestions{position:absolute;top:100%;left:0;right:0;background:var(--surface2);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;z-index:200;max-height:200px;overflow-y:auto;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+  .suggestions.open{display:block}
+  .suggestion-item{padding:10px 16px;font-size:13px;cursor:pointer;color:var(--text-dim);transition:background .1s;border-bottom:1px solid var(--border)}
+  .suggestion-item:last-child{border-bottom:none}
+  .suggestion-item:hover{background:var(--surface);color:var(--text)}
+  .submit-btn{padding:12px 22px;background:var(--blue);color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s cubic-bezier(.34,1.56,.64,1);min-width:110px;height:46px}
+  .submit-btn:hover:not(:disabled){background:#4a7af0;transform:translateY(-2px);box-shadow:0 6px 20px rgba(91,138,245,.3)}
+  .submit-btn:active:not(:disabled){transform:translateY(0) scale(.98)}
+  .submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+  /* FEEDBACK */
+  .feedback-box{border-radius:12px;padding:16px 20px;font-size:14px;line-height:1.6;margin-bottom:16px;display:none;animation:screenIn .3s ease both}
+  .feedback-box.success{display:block;background:rgba(74,205,141,.08);border:1px solid rgba(74,205,141,.25);color:var(--green)}
+  .feedback-box.error{display:block;background:rgba(232,93,74,.08);border:1px solid rgba(232,93,74,.25);color:var(--red)}
+  .feedback-box.info{display:block;background:rgba(91,138,245,.08);border:1px solid rgba(91,138,245,.25);color:var(--blue)}
+
+  .loading-overlay{display:none;text-align:center;padding:20px;color:var(--muted);font-size:14px}
+  .loading-overlay.active{display:block}
+  .spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .action-bar{display:flex;justify-content:space-between;align-items:center}
+
+  /* WIN */
+  .win-screen{text-align:center;padding:40px 20px}
+  .win-icon{font-size:72px;display:block;margin-bottom:16px;animation:winPop .5s cubic-bezier(.34,1.56,.64,1) both}
+  @keyframes winPop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+  .win-title{font-family:'Playfair Display',serif;font-size:42px;font-weight:900;color:var(--gold);margin-bottom:8px}
+  .win-subtitle{color:var(--text-dim);font-size:16px;margin-bottom:40px}
+  .win-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px}
+  .win-stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 16px}
+  .win-stat-value{font-family:'Playfair Display',serif;font-size:36px;font-weight:700;color:var(--gold);display:block}
+  .win-stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.15em;margin-top:4px;display:block}
+  .win-chain-recap{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:32px;text-align:left}
+  .win-chain-recap h3{font-family:'Playfair Display',serif;font-size:16px;color:var(--gold);margin-bottom:16px}
+  .win-chain-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
+  .win-chain-item:last-child{border-bottom:none}
+  .win-chain-item .actor-name{font-weight:600;color:var(--text)}
+  .win-chain-item .via{color:var(--muted);font-style:italic;font-size:12px;margin-top:2px}
+  .play-again-btn{width:100%;padding:18px;background:var(--gold);color:#0a0a0f;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;letter-spacing:.05em;cursor:pointer;transition:all .2s cubic-bezier(.34,1.56,.64,1);text-transform:uppercase;margin-bottom:12px}
+  .play-again-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(245,200,66,.35)}
+
+  /* LEADERBOARD */
+  .leaderboard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:32px;text-align:left}
+  .leaderboard h3{font-family:'Playfair Display',serif;font-size:16px;color:var(--gold);margin-bottom:16px}
+  .lb-empty{color:var(--muted);font-size:13px;text-align:center;padding:12px 0}
+  .lb-row{display:grid;grid-template-columns:28px 1fr auto auto;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+  .lb-row:last-child{border-bottom:none}
+  .lb-rank{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-align:center}
+  .lb-pair{color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lb-pair strong{color:var(--text);font-weight:600}
+  .lb-hops{font-family:'DM Mono',monospace;font-size:12px;color:var(--gold);font-weight:600;white-space:nowrap}
+  .lb-diff{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:999px}
+  .lb-diff.easy{background:rgba(74,205,141,.12);color:var(--easy)}
+  .lb-diff.medium{background:rgba(245,167,66,.12);color:var(--medium)}
+  .lb-diff.hard{background:rgba(232,93,74,.12);color:var(--hard)}
+  .lb-clear{background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;float:right;margin-top:-36px}
+  .lb-clear:hover{color:var(--red)}
+
+  /* LOADING SCREEN */
+  .loading-screen{text-align:center;padding:80px 20px}
+  .clapperboard{font-size:64px;display:block;margin-bottom:24px;animation:clap .8s ease infinite alternate}
+  @keyframes clap{from{transform:rotate(-5deg)}to{transform:rotate(5deg)}}
+  .loading-text{font-family:'Playfair Display',serif;font-size:24px;color:var(--gold);margin-bottom:8px}
+  .loading-sub{color:var(--muted);font-size:14px}
+
+  @media(max-width:600px){
+    .difficulty-grid{grid-template-columns:1fr}
+    .input-row{grid-template-columns:1fr}
+    .win-stats{gap:8px}
+    .game-header{flex-direction:column;gap:12px;align-items:flex-start}
+  }
+</style>
+</head>
+<body>
+
+<div class="film-strip-bar"><div class="sprocket-holes" id="sprockets-top"></div></div>
+
+<header>
+  <div class="logo">
+    <div class="logo-title">This2Them</div>
+    <div class="logo-sub">How well do you know movies?</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ── HOME ── -->
+  <div id="screen-home" class="screen active">
+    <p class="tagline">Connect two actors through <strong>shared films</strong> and <strong>co-stars</strong>.<br>How few hops does it take you?</p>
+
+    <div class="icon-btn-row">
+      <button class="icon-btn" onclick="openModal('info')" title="How to Play">?</button>
+      <button class="icon-btn" onclick="openModal('settings')" title="Settings">⚙</button>
+    </div>
+
+    <div class="difficulty-grid">
+      <div class="diff-card easy"   onclick="selectDiff('easy')">  <div class="diff-name">Easy</div></div>
+      <div class="diff-card medium" onclick="selectDiff('medium')"><div class="diff-name">Medium</div></div>
+      <div class="diff-card hard"   onclick="selectDiff('hard')">  <div class="diff-name">Hard</div></div>
+    </div>
+
+    <button class="start-btn" id="start-btn" onclick="startGame()" disabled>Start Guessing</button>
+    <div id="proxy-status" style="text-align:center;font-size:12px;color:var(--muted);margin-top:10px">Connecting to TMDB…</div>
+
+    <div class="leaderboard" id="home-leaderboard" style="margin-top:40px">
+      <h3>Your Best Games</h3>
+      <button class="lb-clear" onclick="clearLeaderboard()">Clear</button>
+      <div id="lb-list"></div>
+    </div>
+  </div>
+
+  <!-- ── LOADING ── -->
+  <div id="screen-loading" class="screen">
+    <div class="loading-screen">
+      <span class="clapperboard">🎬</span>
+      <div class="loading-text" id="load-title">Setting the scene…</div>
+      <div class="loading-sub"  id="load-sub">Consulting TMDB archives…</div>
+    </div>
+  </div>
+
+  <!-- ── GAME ── -->
+  <div id="screen-game" class="screen">
+    <div class="game-header">
+      <div class="game-meta">
+        <span class="diff-badge" id="diff-badge">Easy</span>
+        <span class="hops-display">Hops: <span id="hop-count">0</span></span>
+      </div>
+      <button class="quit-btn" onclick="goHome()">✕ Quit</button>
+    </div>
+
+    <div class="chain-container">
+      <div class="chain-label">Your Chain</div>
+      <div class="chain" id="chain-display"></div>
+    </div>
+
+    <div style="font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Target</div>
+    <div class="target-actor">
+      <div><div class="label">Connect to</div><div id="target-name" style="font-size:16px">—</div></div>
+      <span style="font-size:24px">🎯</span>
+    </div>
+
+    <div class="feedback-box" id="feedback-box"></div>
+    <div class="loading-overlay" id="load-overlay"><span class="spinner"></span><span id="load-msg">Checking TMDB…</span></div>
+
+    <div class="input-section">
+      <h3>Make Your Move — <span id="cur-actor-name" style="color:var(--blue)">—</span></h3>
+      <div class="input-row">
+        <div class="input-group">
+          <label>🎬 Movie</label>
+          <div class="input-wrap">
+            <input class="game-input" id="movie-input" type="text" placeholder="e.g. Tropic Thunder" autocomplete="off">
+            <div class="suggestions" id="movie-sugg"></div>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>🎭 Next Actor</label>
+          <div class="input-wrap">
+            <input class="game-input" id="actor-input" type="text" placeholder="e.g. Jack Black" autocomplete="off">
+            <div class="suggestions" id="actor-sugg"></div>
+          </div>
+        </div>
+        <button class="submit-btn" id="submit-btn" onclick="submitMove()">Submit</button>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <span style="font-size:12px;color:var(--muted)">Enter to submit</span>
+    </div>
+  </div>
+
+  <!-- ── WIN ── -->
+  <div id="screen-win" class="screen">
+    <div class="win-screen">
+      <span class="win-icon" id="win-icon">🏆</span>
+      <div class="win-title">You Did It!</div>
+      <div class="win-subtitle" id="win-sub">Legendary cinephile instincts!</div>
+      <div class="win-stats">
+        <div class="win-stat"><span class="win-stat-value" id="s-hops">—</span><span class="win-stat-label">Hops Used</span></div>
+        <div class="win-stat"><span class="win-stat-value" id="s-rating">—</span><span class="win-stat-label">Rating</span></div>
+        <div class="win-stat"><span class="win-stat-value" id="s-diff">—</span><span class="win-stat-label">Difficulty</span></div>
+      </div>
+      <div class="win-chain-recap"><h3>Your Chain</h3><div id="win-chain"></div></div>
+      <button class="play-again-btn" onclick="goHome()">🎬 Play Again</button>
+      <button class="play-again-btn" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);margin-top:0" onclick="startGame()">Play Same Difficulty</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── INFO MODAL ── -->
+<div class="modal-overlay" id="modal-info" onclick="closeModal('info')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('info')">×</button>
+    <div class="modal-title">How to Play</div>
+    <div class="how-steps">
+      <div class="how-step"><span class="how-step-num">1</span><span>You're given a <strong style="color:var(--gold)">Start Actor</strong> and a <strong style="color:var(--purple)">Target Actor</strong>.</span></div>
+      <div class="how-step"><span class="how-step-num">2</span><span>Name a <strong>movie</strong> the current actor appeared in, then name a <strong>co-star</strong> from that movie to hop to next.</span></div>
+      <div class="how-step"><span class="how-step-num">3</span><span>Every move is verified live against TMDB's real database — no guessing allowed!</span></div>
+      <div class="how-step"><span class="how-step-num">4</span><span>Reach the Target Actor in as <strong>few hops</strong> as possible.</span></div>
+      <div class="how-step"><span class="how-step-num">5</span><span>Example: <em>RDJ → Tropic Thunder → Jack Black → The Minecraft Movie → Jason Momoa ✓</em></span></div>
+    </div>
+    <div style="margin-top:20px;padding:14px 16px;background:var(--surface2);border-radius:10px;font-size:13px;color:var(--text-dim);line-height:1.8">
+      <strong style="color:var(--easy)">Easy</strong> — well-known modern actors, short connections.<br>
+      <strong style="color:var(--medium)">Medium</strong> — character actors and less obvious bridges.<br>
+      <strong style="color:var(--hard)">Hard</strong> — classic Hollywood stars requiring multiple hops.
+    </div>
+  </div>
+</div>
+
+<!-- ── SETTINGS MODAL ── -->
+<div class="modal-overlay" id="modal-settings" onclick="closeModal('settings')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('settings')">×</button>
+    <div class="modal-title">Settings</div>
+    <div class="setting-row">
+      <div><div class="setting-label">MCU Movies</div><div class="setting-desc">Allow Marvel Cinematic Universe films</div></div>
+      <label class="toggle-switch"><input type="checkbox" id="toggle-mcu" checked onchange="toggleSetting('mcu',this.checked)"><span class="toggle-track"></span></label>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">DCU Movies</div><div class="setting-desc">Allow DC Universe films</div></div>
+      <label class="toggle-switch"><input type="checkbox" id="toggle-dcu" checked onchange="toggleSetting('dcu',this.checked)"><span class="toggle-track"></span></label>
+    </div>
+    <div class="setting-row column">
+      <div><div class="setting-label">Actor Era</div><div class="setting-desc">Filter puzzles by when actors were most active</div></div>
+      <div class="era-group">
+        <button class="era-btn active" id="era-any"     onclick="setEra('any')">All Eras</button>
+        <button class="era-btn"        id="era-classic" onclick="setEra('classic')">Classic (pre-2000)</button>
+        <button class="era-btn"        id="era-modern"  onclick="setEra('modern')">Modern (2000+)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="film-strip-bar" style="position:fixed;bottom:0;left:0;right:0"><div class="sprocket-holes" id="sprockets-bottom"></div></div>
+
+<script>
+// ═══════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════
+const MARVEL_STUDIO_ID = 420; // TMDB production company ID for Marvel Studios
+const DC_COMPANY_IDS   = new Set([128064, 9993, 507064]); // DC Films, DC Comics, DC Studios
+
+const SETTINGS = { mcu: true, dcu: true, era: 'any' };
+
+const ALL_PAIRS = {
+  easy: [
+    // modern era
+    { start:'Tom Hanks',            target:'Will Smith',           tags:[],           era:'any'    },
+    { start:'Jennifer Aniston',     target:'Brad Pitt',            tags:[],           era:'any'    },
+    { start:'Meryl Streep',         target:'Tom Cruise',           tags:[],           era:'any'    },
+    { start:'Dwayne Johnson',       target:'Kevin Hart',           tags:[],           era:'modern' },
+    { start:'Leonardo DiCaprio',    target:'Margot Robbie',        tags:[],           era:'any'    },
+    { start:'Julia Roberts',        target:'George Clooney',       tags:[],           era:'any'    },
+    { start:'Tom Hanks',            target:'Denzel Washington',    tags:[],           era:'any'    },
+    { start:'Will Smith',           target:'Charlize Theron',      tags:[],           era:'any'    },
+    { start:'Sandra Bullock',       target:'Ryan Reynolds',        tags:[],           era:'modern' },
+    { start:'Brad Pitt',            target:'Cate Blanchett',       tags:[],           era:'any'    },
+    { start:'Jennifer Lawrence',    target:'Josh Hutcherson',      tags:[],           era:'modern' },
+    { start:'Emma Stone',           target:'Ryan Gosling',         tags:[],           era:'modern' },
+    { start:'Anne Hathaway',        target:'Matthew McConaughey',  tags:[],           era:'modern' },
+    { start:'Reese Witherspoon',    target:'Joaquin Phoenix',      tags:[],           era:'any'    },
+    { start:'Tom Cruise',           target:'Jeremy Renner',        tags:[],           era:'any'    },
+    { start:'Angelina Jolie',       target:'Johnny Depp',          tags:[],           era:'any'    },
+    { start:'Hugh Jackman',         target:'Patrick Stewart',      tags:[],           era:'any'    },
+    { start:'Nicole Kidman',        target:'Tom Hanks',            tags:[],           era:'any'    },
+    { start:'Vin Diesel',           target:'Michelle Rodriguez',   tags:[],           era:'modern' },
+    { start:'Mark Wahlberg',        target:'Leonardo DiCaprio',    tags:[],           era:'any'    },
+    { start:'Keanu Reeves',         target:'Laurence Fishburne',   tags:[],           era:'any'    },
+    { start:'Adam Sandler',         target:'Jack Nicholson',       tags:[],           era:'any'    },
+    { start:'Jim Carrey',           target:'Jeff Daniels',         tags:[],           era:'any'    },
+    { start:'Robin Williams',       target:'Matt Damon',           tags:[],           era:'any'    },
+    { start:'Harrison Ford',        target:'Sigourney Weaver',     tags:[],           era:'any'    },
+    { start:'Sylvester Stallone',   target:'Arnold Schwarzenegger',tags:[],           era:'any'    },
+    { start:'Bruce Willis',         target:'Samuel L. Jackson',    tags:[],           era:'any'    },
+    { start:'Mel Gibson',           target:'Danny Glover',         tags:[],           era:'any'    },
+    { start:'Eddie Murphy',         target:'Nick Nolte',           tags:[],           era:'any'    },
+    { start:'Whoopi Goldberg',      target:'Patrick Swayze',       tags:[],           era:'any'    },
+    { start:'Halle Berry',          target:'Pierce Brosnan',       tags:[],           era:'any'    },
+    { start:'Cate Blanchett',       target:'Orlando Bloom',        tags:[],           era:'any'    },
+    { start:'Keira Knightley',      target:'Johnny Depp',          tags:[],           era:'any'    },
+    { start:'Natalie Portman',      target:'Jude Law',             tags:[],           era:'any'    },
+    { start:'Kate Winslet',         target:'Leonardo DiCaprio',    tags:[],           era:'any'    },
+    { start:'Chris Pratt',          target:'Zoe Saldana',          tags:['mcu'],      era:'modern' },
+    { start:'Jeremy Renner',        target:'Chris Hemsworth',      tags:['mcu'],      era:'modern' },
+    { start:'Paul Rudd',            target:'Michael Douglas',      tags:['mcu'],      era:'modern' },
+    { start:'Gal Gadot',            target:'Chris Pine',           tags:['dcu'],      era:'modern' },
+    { start:'Ryan Reynolds',        target:'Blake Lively',         tags:[],           era:'modern' },
+    { start:'Seth Rogen',           target:'James Franco',         tags:[],           era:'modern' },
+    { start:'Jonah Hill',           target:'Channing Tatum',       tags:[],           era:'modern' },
+    { start:'Ben Stiller',          target:'Owen Wilson',          tags:[],           era:'modern' },
+    { start:'Will Ferrell',         target:'Mark Wahlberg',        tags:[],           era:'modern' },
+    { start:'Kristen Wiig',         target:'Maya Rudolph',         tags:[],           era:'modern' },
+    { start:'Melissa McCarthy',     target:'Sandra Bullock',       tags:[],           era:'modern' },
+    { start:'Rebel Wilson',         target:'Anna Kendrick',        tags:[],           era:'modern' },
+    { start:'Shia LaBeouf',         target:'Megan Fox',            tags:[],           era:'modern' },
+    { start:'Mila Kunis',           target:'Natalie Portman',      tags:[],           era:'modern' },
+    { start:'Amy Adams',            target:'Meryl Streep',         tags:[],           era:'any'    },
+    { start:'Viola Davis',          target:'Octavia Spencer',      tags:[],           era:'modern' },
+    { start:'Salma Hayek',          target:'Penélope Cruz',        tags:[],           era:'any'    },
+    { start:'Javier Bardem',        target:'Daniel Craig',         tags:[],           era:'any'    },
+    { start:'Pierce Brosnan',       target:'Judi Dench',           tags:[],           era:'any'    },
+    { start:'Idris Elba',           target:'Tom Hiddleston',       tags:['mcu'],      era:'modern' },
+    { start:'Chadwick Boseman',     target:'Lupita Nyong\'o',      tags:['mcu'],      era:'modern' },
+    { start:'Benedict Cumberbatch', target:'Tilda Swinton',        tags:['mcu'],      era:'modern' },
+    { start:'Tom Holland',          target:'Robert Downey Jr.',    tags:['mcu'],      era:'modern' },
+    { start:'Brie Larson',          target:'Samuel L. Jackson',    tags:['mcu'],      era:'modern' },
+    { start:'Margot Robbie',        target:'Cara Delevingne',      tags:['dcu'],      era:'modern' },
+    { start:'Ben Affleck',          target:'Henry Cavill',         tags:['dcu'],      era:'modern' },
+    { start:'Dwayne Johnson',       target:'Emily Blunt',          tags:[],           era:'modern' },
+    { start:'Chris Evans',          target:'Ana de Armas',         tags:[],           era:'modern' },
+    { start:'Timothée Chalamet',    target:'Zendaya',              tags:[],           era:'modern' },
+    { start:'Florence Pugh',        target:'Scarlett Johansson',   tags:['mcu'],      era:'modern' },
+    { start:'Austin Butler',        target:'Tom Hanks',            tags:[],           era:'modern' },
+    { start:'Brendan Fraser',       target:'Rachel Weisz',         tags:[],           era:'any'    },
+    { start:'Orlando Bloom',        target:'Viggo Mortensen',      tags:[],           era:'any'    },
+    { start:'Gwyneth Paltrow',      target:'Robert Downey Jr.',    tags:['mcu'],      era:'any'    },
+    { start:'Don Cheadle',          target:'Matt Damon',           tags:[],           era:'any'    },
+    { start:'Matt Damon',           target:'Ben Affleck',          tags:[],           era:'any'    },
+    { start:'Jake Gyllenhaal',      target:'Heath Ledger',         tags:[],           era:'modern' },
+    { start:'Heath Ledger',         target:'Christian Bale',       tags:['dcu'],      era:'modern' },
+    { start:'Gary Oldman',          target:'Christian Bale',       tags:['dcu'],      era:'any'    },
+    { start:'Morgan Freeman',       target:'Tom Hanks',            tags:[],           era:'any'    },
+    { start:'Tommy Lee Jones',      target:'Will Smith',           tags:[],           era:'any'    },
+    { start:'Kevin Costner',        target:'Whitney Houston',      tags:[],           era:'any'    },
+    { start:'Richard Gere',         target:'Julia Roberts',        tags:[],           era:'any'    },
+    { start:'Ryan Gosling',         target:'Bradley Cooper',       tags:[],           era:'modern' },
+    { start:'Zac Efron',            target:'Nicole Kidman',        tags:[],           era:'modern' },
+    { start:'Scarlett Johansson',   target:'Adam Driver',          tags:[],           era:'modern' },
+    { start:'Pedro Pascal',         target:'Oscar Isaac',          tags:[],           era:'modern' },
+    { start:'Jacob Elordi',         target:'Barry Keoghan',        tags:[],           era:'modern' },
+    { start:'Paul Mescal',          target:'Saoirse Ronan',        tags:[],           era:'modern' },
+    { start:'Cillian Murphy',       target:'Emily Blunt',          tags:[],           era:'modern' },
+    { start:'Robert Pattinson',     target:'Kristen Stewart',      tags:[],           era:'modern' },
+    { start:'Daniel Radcliffe',     target:'Emma Watson',          tags:[],           era:'modern' },
+    { start:'Chris Hemsworth',      target:'Natalie Portman',      tags:['mcu'],      era:'modern' },
+    { start:'Scarlett Johansson',   target:'Chris Evans',          tags:['mcu'],      era:'modern' },
+    { start:'Robert Downey Jr.',    target:'Jason Momoa',          tags:['mcu','dcu'],era:'modern' },
+    { start:'Dua Lipa',             target:'Matt Damon',           tags:[],           era:'modern' },
+  ],
+  medium: [
+    { start:'Cate Blanchett',       target:'Eddie Murphy',         tags:[],           era:'any'    },
+    { start:'Joaquin Phoenix',      target:'Anne Hathaway',        tags:[],           era:'any'    },
+    { start:'Daniel Craig',         target:'Emma Stone',           tags:[],           era:'any'    },
+    { start:'Denzel Washington',    target:'Natalie Portman',      tags:[],           era:'any'    },
+    { start:'Christian Bale',       target:'Amy Adams',            tags:[],           era:'any'    },
+    { start:'Viola Davis',          target:'Ryan Reynolds',        tags:[],           era:'modern' },
+    { start:'Samuel L. Jackson',    target:'Jamie Foxx',           tags:['mcu'],      era:'any'    },
+    { start:'Ben Affleck',          target:'Matt Damon',           tags:['dcu'],      era:'any'    },
+    { start:'Judi Dench',           target:'Kevin Spacey',         tags:[],           era:'any'    },
+    { start:'Tilda Swinton',        target:'Ralph Fiennes',        tags:[],           era:'any'    },
+    { start:'Cillian Murphy',       target:'Tom Hardy',            tags:[],           era:'modern' },
+    { start:'Michael Fassbender',   target:'James McAvoy',         tags:[],           era:'modern' },
+    { start:'Jessica Chastain',     target:'Viola Davis',          tags:[],           era:'modern' },
+    { start:'Lupita Nyong\'o',      target:'Chiwetel Ejiofor',     tags:[],           era:'modern' },
+    { start:'Mahershala Ali',       target:'Octavia Spencer',      tags:[],           era:'modern' },
+    { start:'Frances McDormand',    target:'Steve Buscemi',        tags:[],           era:'any'    },
+    { start:'Steve Buscemi',        target:'John Turturro',        tags:[],           era:'any'    },
+    { start:'Jeff Bridges',         target:'John Goodman',         tags:[],           era:'any'    },
+    { start:'Philip Seymour Hoffman',target:'Meryl Streep',        tags:[],           era:'any'    },
+    { start:'Paul Giamatti',        target:'Thomas Haden Church',  tags:[],           era:'any'    },
+    { start:'Edward Norton',        target:'Brad Pitt',            tags:[],           era:'any'    },
+    { start:'Jared Leto',           target:'Matthew McConaughey',  tags:[],           era:'modern' },
+    { start:'Michael Shannon',      target:'Amy Adams',            tags:['dcu'],      era:'modern' },
+    { start:'Laurence Fishburne',   target:'Hugo Weaving',         tags:[],           era:'any'    },
+    { start:'Hugo Weaving',         target:'Cate Blanchett',       tags:[],           era:'any'    },
+    { start:'Ian McKellen',         target:'Patrick Stewart',      tags:[],           era:'any'    },
+    { start:'Geoffrey Rush',        target:'Cate Blanchett',       tags:[],           era:'any'    },
+    { start:'Russell Crowe',        target:'Cate Blanchett',       tags:[],           era:'any'    },
+    { start:'Colin Firth',          target:'Helena Bonham Carter', tags:[],           era:'any'    },
+    { start:'Jeremy Irons',         target:'John Malkovich',       tags:[],           era:'any'    },
+    { start:'John Malkovich',       target:'Dustin Hoffman',       tags:[],           era:'any'    },
+    { start:'Al Pacino',            target:'Robert De Niro',       tags:[],           era:'any'    },
+    { start:'Robert De Niro',       target:'Joe Pesci',            tags:[],           era:'any'    },
+    { start:'Joe Pesci',            target:'Macaulay Culkin',      tags:[],           era:'any'    },
+    { start:'Kevin Bacon',          target:'Tom Hanks',            tags:[],           era:'any'    },
+    { start:'Gary Sinise',          target:'Tom Hanks',            tags:[],           era:'any'    },
+    { start:'Cuba Gooding Jr.',     target:'Tom Cruise',           tags:[],           era:'any'    },
+    { start:'Naomi Watts',          target:'Sean Penn',            tags:[],           era:'any'    },
+    { start:'Sean Penn',            target:'Tim Robbins',          tags:[],           era:'any'    },
+    { start:'Tim Robbins',          target:'Morgan Freeman',       tags:[],           era:'any'    },
+    { start:'Clint Eastwood',       target:'Morgan Freeman',       tags:[],           era:'any'    },
+    { start:'Harvey Keitel',        target:'Tim Roth',             tags:[],           era:'any'    },
+    { start:'Tim Roth',             target:'John Travolta',        tags:[],           era:'any'    },
+    { start:'John Travolta',        target:'Samuel L. Jackson',    tags:[],           era:'any'    },
+    { start:'Christoph Waltz',      target:'Léa Seydoux',         tags:[],           era:'any'    },
+    { start:'Marion Cotillard',     target:'Joseph Gordon-Levitt', tags:[],           era:'modern' },
+    { start:'Elliot Page',          target:'Leonardo DiCaprio',    tags:[],           era:'modern' },
+    { start:'Ken Watanabe',         target:'Liam Neeson',          tags:[],           era:'any'    },
+    { start:'Liam Neeson',          target:'Ralph Fiennes',        tags:[],           era:'any'    },
+    { start:'Ralph Fiennes',        target:'Juliette Binoche',     tags:[],           era:'any'    },
+    { start:'Kathy Bates',          target:'James Caan',           tags:[],           era:'any'    },
+    { start:'Diane Keaton',         target:'Jack Nicholson',       tags:[],           era:'any'    },
+    { start:'Sissy Spacek',         target:'Tommy Lee Jones',      tags:[],           era:'any'    },
+    { start:'Anthony Hopkins',      target:'Jodie Foster',         tags:[],           era:'any'    },
+    { start:'Jodie Foster',         target:'Robert De Niro',       tags:[],           era:'any'    },
+    { start:'Chiwetel Ejiofor',     target:'Benedict Cumberbatch', tags:['mcu'],      era:'modern' },
+    { start:'Rachel McAdams',       target:'Ryan Gosling',         tags:[],           era:'modern' },
+    { start:'Ryan Gosling',         target:'Eva Mendes',           tags:[],           era:'modern' },
+    { start:'Rooney Mara',          target:'Cate Blanchett',       tags:[],           era:'modern' },
+    { start:'Saoirse Ronan',        target:'Laurie Metcalf',       tags:[],           era:'modern' },
+    { start:'Carey Mulligan',       target:'Ryan Gosling',         tags:[],           era:'modern' },
+    { start:'Keira Knightley',      target:'Carey Mulligan',       tags:[],           era:'modern' },
+    { start:'James McAvoy',         target:'Keira Knightley',      tags:[],           era:'modern' },
+    { start:'Michael Caine',        target:'Cillian Murphy',       tags:[],           era:'any'    },
+    { start:'Michael Caine',        target:'Heath Ledger',         tags:['dcu'],      era:'any'    },
+    { start:'Aaron Eckhart',        target:'Michael Caine',        tags:['dcu'],      era:'any'    },
+    { start:'Jake Gyllenhaal',      target:'Mark Ruffalo',         tags:[],           era:'modern' },
+    { start:'Mark Ruffalo',         target:'Scarlett Johansson',   tags:['mcu'],      era:'modern' },
+    { start:'Jeremy Renner',        target:'Jon Hamm',             tags:[],           era:'modern' },
+    { start:'Zach Galifianakis',    target:'Bradley Cooper',       tags:[],           era:'modern' },
+    { start:'Bradley Cooper',       target:'Jennifer Lawrence',    tags:[],           era:'modern' },
+    { start:'Jennifer Lawrence',    target:'Amy Adams',            tags:[],           era:'modern' },
+    { start:'Joel Edgerton',        target:'Cate Blanchett',       tags:[],           era:'modern' },
+    { start:'Oscar Isaac',          target:'Carey Mulligan',       tags:[],           era:'modern' },
+    { start:'Domhnall Gleeson',     target:'Saoirse Ronan',        tags:[],           era:'modern' },
+    { start:'Taron Egerton',        target:'Colin Firth',          tags:[],           era:'modern' },
+    { start:'Tom Hardy',            target:'Gary Oldman',          tags:[],           era:'any'    },
+    { start:'Idris Elba',           target:'Matthew McConaughey',  tags:[],           era:'modern' },
+    { start:'Chiwetel Ejiofor',     target:'Don Cheadle',          tags:[],           era:'modern' },
+    { start:'Don Cheadle',          target:'Benicio del Toro',     tags:[],           era:'any'    },
+    { start:'Benicio del Toro',     target:'Josh Brolin',          tags:['mcu'],      era:'any'    },
+    { start:'Zoe Saldana',          target:'Sam Worthington',      tags:[],           era:'modern' },
+    { start:'Dustin Hoffman',       target:'Gene Hackman',         tags:[],           era:'any'    },
+    { start:'James Woods',          target:'Robert De Niro',       tags:[],           era:'any'    },
+    { start:'Uma Thurman',          target:'Harvey Keitel',        tags:[],           era:'any'    },
+    { start:'Charlize Theron',      target:'Seth Rogen',           tags:[],           era:'modern' },
+    { start:'Adam Driver',          target:'Daisy Ridley',         tags:[],           era:'modern' },
+    { start:'Anya Taylor-Joy',      target:'Thomasin McKenzie',    tags:[],           era:'modern' },
+    { start:'Cate Blanchett',       target:'Judi Dench',           tags:[],           era:'any'    },
+    { start:'Meryl Streep',         target:'Alec Baldwin',         tags:[],           era:'any'    },
+    { start:'Eddie Redmayne',       target:'Felicity Jones',       tags:[],           era:'modern' },
+    { start:'Rami Malek',           target:'Tom Hanks',            tags:[],           era:'modern' },
+    { start:'Andrew Garfield',      target:'Jesse Eisenberg',      tags:[],           era:'modern' },
+    { start:'Miles Teller',         target:'J.K. Simmons',         tags:[],           era:'modern' },
+    { start:'Viola Davis',          target:'Denzel Washington',    tags:[],           era:'modern' },
+    { start:'Sam Neill',            target:'Laura Dern',           tags:[],           era:'any'    },
+    { start:'Jeff Goldblum',        target:'Laura Dern',           tags:[],           era:'any'    },
+    { start:'Bill Murray',          target:'Scarlett Johansson',   tags:[],           era:'any'    },
+    { start:'Bill Murray',          target:'Frances McDormand',    tags:[],           era:'any'    },
+  ],
+  hard: [
+    // Era-bridging: classic actors (died/retired before 1965) paired with modern actors (career started 1977+)
+    // The 12+ year gap makes shared films impossible — all pairs guaranteed to require 2+ hops
+
+    // Humphrey Bogart (died Jan 1957)
+    { start:'Humphrey Bogart',    target:'Tom Hanks',          tags:[], era:'any' },
+    { start:'Humphrey Bogart',    target:'Meryl Streep',       tags:[], era:'any' },
+    { start:'Humphrey Bogart',    target:'Denzel Washington',  tags:[], era:'any' },
+
+    // Clark Gable (died Nov 1960)
+    { start:'Clark Gable',        target:'Brad Pitt',          tags:[], era:'any' },
+    { start:'Clark Gable',        target:'Julia Roberts',      tags:[], era:'any' },
+    { start:'Clark Gable',        target:'Russell Crowe',      tags:[], era:'any' },
+
+    // James Dean (died Sep 1955)
+    { start:'James Dean',         target:'Leonardo DiCaprio',  tags:[], era:'any' },
+    { start:'James Dean',         target:'Keanu Reeves',       tags:[], era:'any' },
+    { start:'James Dean',         target:'Will Smith',         tags:[], era:'any' },
+
+    // Grace Kelly (retired from acting 1956)
+    { start:'Grace Kelly',        target:'Cate Blanchett',     tags:[], era:'any' },
+    { start:'Grace Kelly',        target:'Nicole Kidman',      tags:[], era:'any' },
+    { start:'Grace Kelly',        target:'Emma Thompson',      tags:[], era:'any' },
+
+    // Greta Garbo (retired 1941)
+    { start:'Greta Garbo',        target:'Charlize Theron',    tags:[], era:'any' },
+    { start:'Greta Garbo',        target:'Scarlett Johansson', tags:[], era:'any' },
+    { start:'Greta Garbo',        target:'Kate Winslet',       tags:[], era:'any' },
+
+    // Marilyn Monroe (died Aug 1962)
+    { start:'Marilyn Monroe',     target:'Halle Berry',        tags:[], era:'any' },
+    { start:'Marilyn Monroe',     target:'Anne Hathaway',      tags:[], era:'any' },
+    { start:'Marilyn Monroe',     target:'Margot Robbie',      tags:[], era:'any' },
+
+    // Gary Cooper (died May 1961)
+    { start:'Gary Cooper',        target:'Tom Cruise',         tags:[], era:'any' },
+    { start:'Gary Cooper',        target:'George Clooney',     tags:[], era:'any' },
+    { start:'Gary Cooper',        target:'Kevin Bacon',        tags:[], era:'any' },
+
+    // Jean Harlow (died Jun 1937)
+    { start:'Jean Harlow',        target:'Jennifer Lawrence',  tags:[], era:'any' },
+    { start:'Jean Harlow',        target:'Reese Witherspoon',  tags:[], era:'any' },
+    { start:'Jean Harlow',        target:'Amy Adams',          tags:[], era:'any' },
+
+    // Carole Lombard (died Jan 1942)
+    { start:'Carole Lombard',     target:'Sandra Bullock',     tags:[], era:'any' },
+    { start:'Carole Lombard',     target:'Winona Ryder',       tags:[], era:'any' },
+    { start:'Carole Lombard',     target:'Gwyneth Paltrow',    tags:[], era:'any' },
+
+    // William Powell (retired 1955)
+    { start:'William Powell',     target:'Hugh Jackman',       tags:[], era:'any' },
+    { start:'William Powell',     target:'Matt Damon',         tags:[], era:'any' },
+    { start:'William Powell',     target:'Colin Firth',        tags:[], era:'any' },
+
+    // Tyrone Power (died Nov 1958)
+    { start:'Tyrone Power',       target:'Johnny Depp',        tags:[], era:'any' },
+    { start:'Tyrone Power',       target:'Nicolas Cage',       tags:[], era:'any' },
+    { start:'Tyrone Power',       target:'Orlando Bloom',      tags:[], era:'any' },
+
+    // Errol Flynn (died Oct 1959)
+    { start:'Errol Flynn',        target:'Hugh Grant',         tags:[], era:'any' },
+    { start:'Errol Flynn',        target:'Jim Carrey',         tags:[], era:'any' },
+    { start:'Errol Flynn',        target:'Viggo Mortensen',    tags:[], era:'any' },
+
+    // Charles Laughton (died Dec 1962)
+    { start:'Charles Laughton',   target:'Geoffrey Rush',      tags:[], era:'any' },
+    { start:'Charles Laughton',   target:'Tim Robbins',        tags:[], era:'any' },
+    { start:'Charles Laughton',   target:'Christian Bale',     tags:[], era:'any' },
+
+    // Buster Keaton (died Feb 1966)
+    { start:'Buster Keaton',      target:'Steve Martin',       tags:[], era:'any' },
+    { start:'Buster Keaton',      target:'Robin Williams',     tags:[], era:'any' },
+    { start:'Buster Keaton',      target:'Billy Crystal',      tags:[], era:'any' },
+
+    // Hedy Lamarr (retired 1958)
+    { start:'Hedy Lamarr',        target:'Julianne Moore',     tags:[], era:'any' },
+    { start:'Hedy Lamarr',        target:'Naomi Watts',        tags:[], era:'any' },
+    { start:'Hedy Lamarr',        target:'Rachel McAdams',     tags:[], era:'any' },
+
+    // Betty Grable (retired 1955)
+    { start:'Betty Grable',       target:'Natalie Portman',    tags:[], era:'any' },
+    { start:'Betty Grable',       target:'Hilary Swank',       tags:[], era:'any' },
+    { start:'Betty Grable',       target:'Kate Hudson',        tags:[], era:'any' },
+
+    // John Garfield (died May 1952)
+    { start:'John Garfield',      target:'Al Pacino',          tags:[], era:'any' },
+    { start:'John Garfield',      target:'Robert De Niro',     tags:[], era:'any' },
+    { start:'John Garfield',      target:'Dustin Hoffman',     tags:[], era:'any' },
+
+    // Alan Ladd (died Jan 1964)
+    { start:'Alan Ladd',          target:'Bruce Willis',       tags:[], era:'any' },
+    { start:'Alan Ladd',          target:'Mel Gibson',         tags:[], era:'any' },
+    { start:'Alan Ladd',          target:'Harrison Ford',      tags:[], era:'any' },
+
+    // Irene Dunne (retired 1952)
+    { start:'Irene Dunne',        target:'Jude Law',           tags:[], era:'any' },
+    { start:'Irene Dunne',        target:'Keira Knightley',    tags:[], era:'any' },
+    { start:'Irene Dunne',        target:'Jake Gyllenhaal',    tags:[], era:'any' },
+
+    // W.C. Fields (died Dec 1946)
+    { start:'W.C. Fields',        target:'Robin Williams',     tags:[], era:'any' },
+    { start:'W.C. Fields',        target:'Eddie Murphy',       tags:[], era:'any' },
+    { start:'W.C. Fields',        target:'Bill Murray',        tags:[], era:'any' },
+  ]
+};
+
+// ═══════════════════════════════════
+//  LEADERBOARD (localStorage)
+// ═══════════════════════════════════
+const LB_KEY = 't2t_leaderboard';
+const LB_MAX = 20;
+
+function lbLoad() {
+  try { return JSON.parse(localStorage.getItem(LB_KEY)) || []; } catch { return []; }
+}
+
+function lbSave(entries) {
+  localStorage.setItem(LB_KEY, JSON.stringify(entries));
+}
+
+function lbAdd(entry) {
+  // entry: { start, target, hops, difficulty, date }
+  const entries = lbLoad();
+  entries.push(entry);
+  // Sort: fewer hops first, then harder difficulty first, then newest
+  const diffOrder = { hard:0, medium:1, easy:2 };
+  entries.sort((a,b) => a.hops - b.hops || diffOrder[a.difficulty] - diffOrder[b.difficulty] || b.date - a.date);
+  lbSave(entries.slice(0, LB_MAX));
+}
+
+function lbRender() {
+  const entries = lbLoad();
+  const el = document.getElementById('lb-list');
+  if (!entries.length) { el.innerHTML = '<div class="lb-empty">No games yet — play one!</div>'; return; }
+  el.innerHTML = entries.map((e,i) => `
+    <div class="lb-row">
+      <span class="lb-rank">${i+1}</span>
+      <span class="lb-pair"><strong>${e.start}</strong> → <strong>${e.target}</strong></span>
+      <span class="lb-hops">${e.hops} hop${e.hops!==1?'s':''}</span>
+      <span class="lb-diff ${e.difficulty}">${e.difficulty}</span>
+    </div>`).join('');
+}
+
+function clearLeaderboard() {
+  if (!confirm('Clear your entire leaderboard?')) return;
+  localStorage.removeItem(LB_KEY);
+  lbRender();
+}
+
+// ═══════════════════════════════════
+//  STATE
+// ═══════════════════════════════════
+const G = {
+  difficulty:'easy', startActor:'', targetActor:'',
+  currentActor:'', currentActorId:null, targetActorId:null,
+  chain:[], hops:0,
+  personMovieCache:{},   // personId -> Set<movieId>
+  movieDetailCache:{},   // movieId  -> {title,castIds,castNames,isMCU,isDCU}
+  pendingMovieDetails:null,
+  movieCandidates:[],
+};
+
+// Tracks pairs already played this session (resets on page load)
+const usedPairKeys  = { easy: new Set(), medium: new Set(), hard: new Set() };
+const usedActors    = { easy: new Set(), medium: new Set(), hard: new Set() };
+
+// ═══════════════════════════════════
+//  INIT
+// ═══════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  makeSprockets();
+  selectDiff('easy');
+  tmdb('/movie/550').then(r => {
+    const st = document.getElementById('proxy-status');
+    if (r && r.id === 550) {
+      document.getElementById('start-btn').disabled = false;
+      st.style.display = 'none';
+    } else {
+      st.style.color = 'var(--red)';
+      st.textContent = 'Could not reach TMDB. Check that TMDB_API_KEY is set in your Netlify environment variables, then redeploy.';
+    }
+  }).catch(() => {
+    const st = document.getElementById('proxy-status');
+    st.style.color = 'var(--red)';
+    st.textContent = 'Proxy error. Check that TMDB_API_KEY is set in Netlify environment variables, then redeploy.';
+  });
+  lbRender();
+  document.getElementById('movie-input').addEventListener('input', onMovieType);
+  document.getElementById('actor-input').addEventListener('input', onActorType);
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.input-wrap')) { hideSugg('movie'); hideSugg('actor'); }
+  });
+});
+window.addEventListener('resize', makeSprockets);
+
+function makeSprockets() {
+  ['sprockets-top','sprockets-bottom'].forEach(id => {
+    const el = document.getElementById(id); el.innerHTML = '';
+    for (let i=0; i < Math.ceil(window.innerWidth/30); i++) el.appendChild(document.createElement('span'));
+  });
+}
+
+// ═══════════════════════════════════
+//  TMDB FETCH (via serverless proxy)
+// ═══════════════════════════════════
+const _cache = {};
+async function tmdb(path, params={}) {
+  const cacheKey = path + JSON.stringify(params);
+  if (_cache[cacheKey]) return _cache[cacheKey];
+
+  const r = await fetch('/.netlify/functions/tmdb', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path, params })
+  });
+  const d = await r.json();
+  _cache[cacheKey] = d;
+  return d;
+}
+
+// ═══════════════════════════════════
+//  TMDB HELPERS
+// ═══════════════════════════════════
+async function findPerson(name) {
+  const d = await tmdb('/search/person', {query: name, include_adult:'false'});
+  return d.results?.[0] ? {id: d.results[0].id, name: d.results[0].name} : null;
+}
+
+async function personMovies(pid) {
+  if (G.personMovieCache[pid]) return G.personMovieCache[pid];
+  const d = await tmdb(`/person/${pid}/movie_credits`);
+  const ids = new Set((d.cast||[]).map(m=>m.id));
+  G.personMovieCache[pid] = ids;
+  return ids;
+}
+
+async function movieDetails(mid) {
+  if (G.movieDetailCache[mid]) return G.movieDetailCache[mid];
+  const d = await tmdb(`/movie/${mid}`, {append_to_response:'credits'});
+  const castIds = new Set(), castNames = new Map();
+  for (const p of (d.credits?.cast||[])) { castIds.add(p.id); castNames.set(p.id, p.name); }
+  const companies = (d.production_companies||[]).map(c=>c.id);
+  const isMCU = companies.includes(MARVEL_STUDIO_ID);
+  const isDCU = companies.some(c => DC_COMPANY_IDS.has(c));
+  const info = {title: d.title, castIds, castNames, isMCU, isDCU};
+  G.movieDetailCache[mid] = info;
+  return info;
+}
+
+async function searchMovies(q) {
+  if (q.length < 2) return [];
+  const d = await tmdb('/search/movie', {query:q, include_adult:'false'});
+  return (d.results||[]).slice(0,8).map(m=>({id:m.id, title:m.title, year:(m.release_date||'').slice(0,4)}));
+}
+
+function fuzzy(a, b) {
+  const n = s => s.toLowerCase().replace(/[^a-z0-9]/g,'');
+  return n(a)===n(b) || n(a).includes(n(b)) || n(b).includes(n(a));
+}
+
+// ═══════════════════════════════════
+//  UI HELPERS
+// ═══════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+}
+
+function selectDiff(d) {
+  G.difficulty = d;
+  document.querySelectorAll('.diff-card').forEach(c=>c.classList.remove('selected'));
+  document.querySelector('.diff-card.'+d).classList.add('selected');
+}
+
+function toggleSetting(key, val) {
+  SETTINGS[key] = val;
+}
+
+function setEra(era) {
+  SETTINGS.era = era;
+  document.querySelectorAll('.era-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('era-' + era).classList.add('active');
+}
+
+function openModal(id) {
+  document.getElementById('modal-' + id).classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById('modal-' + id).classList.remove('open');
+}
+
+function goHome() { lbRender(); showScreen('home'); }
+
+function renderChain() {
+  const el = document.getElementById('chain-display'); el.innerHTML = '';
+  G.chain.forEach((node,i) => {
+    if (i>0 && node.movie) {
+      const mv = document.createElement('div'); mv.className='chain-movie';
+      mv.innerHTML=`<span class="chain-arrow">→</span><span class="chain-movie-label" title="${node.movie}">${node.movie}</span><span class="chain-arrow">→</span>`;
+      el.appendChild(mv);
+    }
+    const wrap=document.createElement('div'); wrap.className='chain-node';
+    const a=document.createElement('div');
+    let cls='chain-actor';
+    if(i===0) cls+=' start';
+    else if(node.actor.toLowerCase()===G.targetActor.toLowerCase()) cls+=' end';
+    else if(i===G.chain.length-1) cls+=' current';
+    a.className=cls; a.textContent=node.actor;
+    wrap.appendChild(a); el.appendChild(wrap);
+  });
+}
+
+function showFeedback(msg,type) {
+  const el=document.getElementById('feedback-box');
+  el.textContent=msg; el.className='feedback-box '+type;
+}
+function clearFeedback() {
+  const el=document.getElementById('feedback-box');
+  el.className='feedback-box'; el.textContent='';
+}
+function setLoad(on, msg='Checking TMDB…') {
+  document.getElementById('load-overlay').classList.toggle('active',on);
+  document.getElementById('load-msg').textContent=msg;
+  document.getElementById('submit-btn').disabled=on;
+}
+
+// ═══════════════════════════════════
+//  AUTOCOMPLETE
+// ═══════════════════════════════════
+let _mvTimer=null, _acTimer=null;
+
+function onMovieType() {
+  clearTimeout(_mvTimer); hideSugg('actor');
+  G.movieCandidates=[]; G.pendingMovieDetails=null;
+  const v = document.getElementById('movie-input').value.trim();
+  if (v.length<2) { hideSugg('movie'); return; }
+  _mvTimer = setTimeout(async () => {
+    const res = await searchMovies(v);
+    G.movieCandidates = res;
+    showSugg('movie', res.map(r=>`${r.title}${r.year?' ('+r.year+')':''}`), idx => {
+      document.getElementById('movie-input').value = res[idx].title;
+      G.movieCandidates = [res[idx]];
+      hideSugg('movie');
+      document.getElementById('actor-input').focus();
+      // Pre-load cast for autocomplete
+      movieDetails(res[idx].id).then(d => { G.pendingMovieDetails = d; });
+    });
+  }, 280);
+}
+
+function onActorType() {
+  clearTimeout(_acTimer);
+  const v = document.getElementById('actor-input').value.trim().toLowerCase();
+  if (v.length<1) { hideSugg('actor'); return; }
+  _acTimer = setTimeout(async () => {
+    if (G.pendingMovieDetails) {
+      // Filter loaded cast
+      const matches=[];
+      for (const [id,name] of G.pendingMovieDetails.castNames) {
+        if (name.toLowerCase().includes(v)) matches.push(name);
+        if (matches.length>=8) break;
+      }
+      showSugg('actor', matches, idx => {
+        document.getElementById('actor-input').value = matches[idx];
+        hideSugg('actor');
+      });
+    } else {
+      // Fallback: TMDB person search
+      const d = await tmdb('/search/person', {query:v, include_adult:'false'});
+      const names = (d.results||[]).slice(0,6).map(r=>r.name);
+      showSugg('actor', names, idx => {
+        document.getElementById('actor-input').value = names[idx];
+        hideSugg('actor');
+      });
+    }
+  }, 250);
+}
+
+function showSugg(type, items, onPick) {
+  const el = document.getElementById(type+'-sugg'); el.innerHTML='';
+  if (!items.length) { el.classList.remove('open'); return; }
+  items.forEach((item,i) => {
+    const d=document.createElement('div'); d.className='suggestion-item'; d.textContent=item;
+    d.onmousedown=e=>{ e.preventDefault(); onPick(i); };
+    el.appendChild(d);
+  });
+  el.classList.add('open');
+}
+function hideSugg(type) { document.getElementById(type+'-sugg').classList.remove('open'); }
+
+// ═══════════════════════════════════
+//  GAME SETUP
+// ═══════════════════════════════════
+function filteredPairs(diff) {
+  const played = usedPairKeys[diff];
+  const seen   = usedActors[diff];
+  return ALL_PAIRS[diff].filter(p => {
+    if (played.has(p.start + '|||' + p.target)) return false;
+    if (seen.has(p.start) || seen.has(p.target)) return false;
+    if (SETTINGS.era !== 'any') {
+      const pEra = p.era || 'any';
+      if (pEra !== 'any' && pEra !== SETTINGS.era) return false;
+    }
+    if (!p.tags.length) return true;
+    if (p.tags.includes('mcu') && p.tags.includes('dcu')) return SETTINGS.mcu && SETTINGS.dcu;
+    if (p.tags.includes('mcu')) return SETTINGS.mcu;
+    if (p.tags.includes('dcu')) return SETTINGS.dcu;
+    return true;
+  });
+}
+
+async function startGame() {
+  const diff = G.difficulty;
+  showScreen('loading');
+  setLoadText('Picking your puzzle…', 'Fetching actor data from TMDB…');
+
+  let s = null, t = null;
+  let maxTries = 20;
+
+  while (maxTries-- > 0) {
+    let pairs = filteredPairs(diff);
+    if (!pairs.length) {
+      // All actors used this session — reset and start fresh
+      usedPairKeys[diff].clear();
+      usedActors[diff].clear();
+      pairs = filteredPairs(diff);
+    }
+    if (!pairs.length) break;
+
+    const pair = pairs[Math.floor(Math.random() * pairs.length)];
+    usedPairKeys[diff].add(pair.start + '|||' + pair.target);
+
+    try {
+      const [cs, ct] = await Promise.all([findPerson(pair.start), findPerson(pair.target)]);
+      if (!cs || !ct) continue;
+
+      // For hard difficulty: verify this isn't a 1-hop pair via TMDB
+      if (diff === 'hard') {
+        setLoadText('Finding a challenge…', 'Verifying difficulty…');
+        const [sm, tm] = await Promise.all([personMovies(cs.id), personMovies(ct.id)]);
+        if ([...sm].some(id => tm.has(id))) continue; // skip 1-hop pairs
+      }
+
+      s = cs; t = ct;
+      usedActors[diff].add(pair.start);
+      usedActors[diff].add(pair.target);
+      break;
+    } catch { continue; }
+  }
+
+  if (!s || !t) {
+    setLoadText('No valid puzzle found', 'Try adjusting your settings.');
+    await sleep(2500); goHome(); return;
+  }
+
+  G.startActor = s.name; G.targetActor = t.name;
+  G.currentActor = s.name; G.currentActorId = s.id; G.targetActorId = t.id;
+  G.chain = [{actor: s.name, movie: null}]; G.hops = 0;
+  G.movieDetailCache = {};
+  G.movieCandidates = []; G.pendingMovieDetails = null;
+
+  setLoadText('Loading filmography…', `Fetching ${s.name}'s movies…`);
+  if (!G.personMovieCache[s.id]) await personMovies(s.id);
+
+  document.getElementById('diff-badge').textContent = diff[0].toUpperCase() + diff.slice(1);
+  document.getElementById('diff-badge').className = 'diff-badge ' + diff;
+  document.getElementById('hop-count').textContent = 0;
+  document.getElementById('target-name').textContent = G.targetActor;
+  document.getElementById('cur-actor-name').textContent = G.currentActor;
+  document.getElementById('submit-btn').disabled = false;
+  document.getElementById('movie-input').value = '';
+  document.getElementById('actor-input').value = '';
+  renderChain(); clearFeedback();
+  showScreen('game');
+  setTimeout(() => document.getElementById('movie-input').focus(), 300);
+}
+
+function setLoadText(t,s) {
+  document.getElementById('load-title').textContent=t;
+  document.getElementById('load-sub').textContent=s;
+}
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+// ═══════════════════════════════════
+//  SUBMIT MOVE — 100% TMDB
+// ═══════════════════════════════════
+async function submitMove() {
+  const movieRaw = document.getElementById('movie-input').value.trim();
+  const actorRaw = document.getElementById('actor-input').value.trim();
+  if (!movieRaw||!actorRaw) { showFeedback('Please fill in both fields.','error'); return; }
+  hideSugg('movie'); hideSugg('actor');
+  setLoad(true,'Searching TMDB…'); clearFeedback();
+
+  try {
+    // 1. Resolve movie
+    let mid=null, mtitle=null;
+    if (G.movieCandidates.length===1 && fuzzy(G.movieCandidates[0].title, movieRaw)) {
+      mid=G.movieCandidates[0].id; mtitle=G.movieCandidates[0].title;
+    } else {
+      const res = await searchMovies(movieRaw);
+      if (!res.length) { showFeedback(`❌ "${movieRaw}" not found on TMDB. Check the spelling!`,'error'); setLoad(false); return; }
+      const best = res.find(r=>fuzzy(r.title,movieRaw)) || res[0];
+      mid=best.id; mtitle=best.title;
+    }
+
+    // 2. Load movie details
+    setLoad(true,`Loading "${mtitle}" cast…`);
+    const details = await movieDetails(mid);
+
+    // 3. MCU/DCU filter
+    if (!SETTINGS.mcu && details.isMCU) { showFeedback(`❌ MCU movies are turned off. Try a non-Marvel film!`,'error'); setLoad(false); return; }
+    if (!SETTINGS.dcu && details.isDCU) { showFeedback(`❌ DCU movies are turned off. Try a non-DC film!`,'error'); setLoad(false); return; }
+
+    // 4. Verify current actor was in this movie
+    setLoad(true,`Checking ${G.currentActor} in "${mtitle}"…`);
+    const curMovies = await personMovies(G.currentActorId);
+    if (!curMovies.has(mid)) {
+      showFeedback(`❌ ${G.currentActor} doesn't appear to be in "${mtitle}" according to TMDB. Double-check!`,'error');
+      setLoad(false); return;
+    }
+
+    // 5. Find the next actor in the cast
+    setLoad(true,`Looking for ${actorRaw} in "${mtitle}"…`);
+    let nextId=null, nextName=null;
+
+    for (const [id,name] of details.castNames) {
+      if (fuzzy(name, actorRaw)) { nextId=id; nextName=name; break; }
+    }
+
+    // Fallback: person search then cross-check
+    if (!nextId) {
+      const p = await findPerson(actorRaw);
+      if (p && details.castIds.has(p.id)) { nextId=p.id; nextName=p.name; }
+    }
+
+    if (!nextId) {
+      showFeedback(`❌ "${actorRaw}" isn't listed in the cast of "${mtitle}" on TMDB. Try another co-star!`,'error');
+      setLoad(false); return;
+    }
+
+    // 6. Record hop
+    G.chain.push({actor:nextName, movie:mtitle});
+    G.hops++;
+    document.getElementById('hop-count').textContent = G.hops;
+
+    const won = nextId===G.targetActorId || fuzzy(nextName, G.targetActor);
+    if (won) {
+      G.chain[G.chain.length-1].actor = G.targetActor;
+      renderChain(); setLoad(false);
+      setTimeout(showWin, 400); return;
+    }
+
+    // 7. Advance
+    G.currentActor=nextName; G.currentActorId=nextId;
+    G.pendingMovieDetails=null; G.movieCandidates=[];
+    document.getElementById('cur-actor-name').textContent=nextName;
+    renderChain();
+    personMovies(nextId); // pre-warm next actor's films in background
+    showFeedback(`✓ Confirmed! ${nextName} was in "${mtitle}". Keep going!`,'success');
+    document.getElementById('movie-input').value='';
+    document.getElementById('actor-input').value='';
+    document.getElementById('movie-input').focus();
+
+  } catch(e) {
+    showFeedback('TMDB lookup failed. Check your connection and try again.','error');
+  }
+  setLoad(false);
+}
+
+
+// ═══════════════════════════════════
+//  WIN
+// ═══════════════════════════════════
+function showWin() {
+  const h=G.hops;
+  let icon='🏆',rating='⭐⭐⭐',sub='Legendary cinephile instincts!';
+  if(h>=5){icon='🎬';rating='⭐';sub='You made it — watch more films and come back!';}
+  else if(h>=3){icon='🎭';rating='⭐⭐';sub='Solid chain-building, cinephile.';}
+  document.getElementById('win-icon').textContent=icon;
+  document.getElementById('win-sub').textContent=sub;
+  document.getElementById('s-hops').textContent=h;
+  document.getElementById('s-rating').textContent=rating;
+  document.getElementById('s-diff').textContent=G.difficulty[0].toUpperCase()+G.difficulty.slice(1);
+  const wc=document.getElementById('win-chain'); wc.innerHTML='';
+  G.chain.forEach(node=>{
+    const d=document.createElement('div'); d.className='win-chain-item';
+    d.innerHTML=`<div><div class="actor-name">${node.actor}</div>${node.movie?`<div class="via">via ${node.movie}</div>`:''}</div>`;
+    wc.appendChild(d);
+  });
+  lbAdd({ start:G.startActor, target:G.targetActor, hops:h, difficulty:G.difficulty, date:Date.now() });
+  showScreen('win');
+}
+
+// ═══════════════════════════════════
+//  KEYBOARD
+// ═══════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    ['info','settings'].forEach(id => closeModal(id));
+  }
+  if (e.key==='Enter' && document.getElementById('screen-game').classList.contains('active')) {
+    const ms=document.getElementById('movie-sugg'), as=document.getElementById('actor-sugg');
+    if (!ms.classList.contains('open') && !as.classList.contains('open')) submitMove();
+  }
+});
+</script>
+</body>
+</html>
