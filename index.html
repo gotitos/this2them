@@ -202,6 +202,14 @@
   .loading-text{font-family:'Playfair Display',serif;font-size:24px;color:var(--gold);margin-bottom:8px}
   .loading-sub{color:var(--muted);font-size:14px}
 
+  /* HINT */
+  .hint-btn{padding:8px 16px;background:rgba(155,109,245,.12);border:1px solid rgba(155,109,245,.4);color:var(--purple);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px}
+  .hint-btn:hover:not(:disabled){background:rgba(155,109,245,.25);border-color:var(--purple);box-shadow:0 0 12px rgba(155,109,245,.25)}
+  .hint-btn:disabled{opacity:.4;cursor:not-allowed}
+  .hint-counter{font-size:10px;opacity:.7}
+  .hint-box{border-radius:12px;padding:14px 18px;font-size:13px;line-height:1.6;margin-bottom:16px;display:none;background:rgba(155,109,245,.08);border:1px solid rgba(155,109,245,.25);color:#c4a8f5;animation:screenIn .3s ease both;font-style:italic}
+  .hint-box.visible{display:block}
+
   @media(max-width:600px){
     .difficulty-grid{grid-template-columns:1fr}
     .input-row{grid-template-columns:1fr}
@@ -279,6 +287,7 @@
     </div>
 
     <div class="feedback-box" id="feedback-box"></div>
+    <div class="hint-box" id="hint-box"></div>
     <div class="loading-overlay" id="load-overlay"><span class="spinner"></span><span id="load-msg">Checking TMDB…</span></div>
 
     <div class="input-section">
@@ -304,6 +313,9 @@
 
     <div class="action-bar">
       <span style="font-size:12px;color:var(--muted)">Enter to submit</span>
+      <button class="hint-btn" id="hint-btn" onclick="requestHint()">
+        💡 Hint <span class="hint-counter" id="hint-counter"></span>
+      </button>
     </div>
   </div>
 
@@ -680,6 +692,49 @@ const ALL_PAIRS = {
     { start:'W.C. Fields',        target:'Robin Williams',     tags:[], era:'any' },
     { start:'W.C. Fields',        target:'Eddie Murphy',       tags:[], era:'any' },
     { start:'W.C. Fields',        target:'Bill Murray',        tags:[], era:'any' },
+
+    // More classic-to-modern bridges
+    { start:'Katharine Hepburn',  target:'Cate Blanchett',     tags:[], era:'any' },
+    { start:'Katharine Hepburn',  target:'Meryl Streep',       tags:[], era:'any' },
+    { start:'Katharine Hepburn',  target:'Gwyneth Paltrow',    tags:[], era:'any' },
+
+    { start:'James Stewart',      target:'Tom Hanks',          tags:[], era:'any' },
+    { start:'James Stewart',      target:'Denzel Washington',  tags:[], era:'any' },
+    { start:'James Stewart',      target:'Kevin Costner',      tags:[], era:'any' },
+
+    { start:'Cary Grant',         target:'George Clooney',     tags:[], era:'any' },
+    { start:'Cary Grant',         target:'Pierce Brosnan',     tags:[], era:'any' },
+    { start:'Cary Grant',         target:'Hugh Grant',         tags:[], era:'any' },
+
+    { start:'Audrey Hepburn',     target:'Julia Roberts',      tags:[], era:'any' },
+    { start:'Audrey Hepburn',     target:'Anne Hathaway',      tags:[], era:'any' },
+    { start:'Audrey Hepburn',     target:'Reese Witherspoon',  tags:[], era:'any' },
+
+    { start:'Gregory Peck',       target:'Liam Neeson',        tags:[], era:'any' },
+    { start:'Gregory Peck',       target:'Anthony Hopkins',    tags:[], era:'any' },
+    { start:'Gregory Peck',       target:'Daniel Day-Lewis',   tags:[], era:'any' },
+
+    { start:'Fred Astaire',       target:'Hugh Jackman',       tags:[], era:'any' },
+    { start:'Fred Astaire',       target:'Gene Hackman',       tags:[], era:'any' },
+
+    { start:'Orson Welles',       target:'John Malkovich',     tags:[], era:'any' },
+    { start:'Orson Welles',       target:'Tim Robbins',        tags:[], era:'any' },
+
+    { start:'Marlon Brando',      target:'Johnny Depp',        tags:[], era:'any' },
+    { start:'Marlon Brando',      target:'Jack Nicholson',     tags:[], era:'any' },
+    { start:'Marlon Brando',      target:'Robert De Niro',     tags:[], era:'any' },
+
+    { start:'Kirk Douglas',       target:'Michael Douglas',    tags:[], era:'any' },
+    { start:'Kirk Douglas',       target:'Jack Nicholson',     tags:[], era:'any' },
+
+    { start:'Tony Curtis',        target:'Jamie Lee Curtis',   tags:[], era:'any' },
+    { start:'Tony Curtis',        target:'Jack Lemmon',        tags:[], era:'any' },
+
+    { start:'Doris Day',          target:'Sandra Bullock',     tags:[], era:'any' },
+    { start:'Doris Day',          target:'Meg Ryan',           tags:[], era:'any' },
+
+    { start:'Frank Sinatra',      target:'Brad Pitt',          tags:[], era:'any' },
+    { start:'Frank Sinatra',      target:'George Clooney',     tags:[], era:'any' },
   ]
 };
 
@@ -737,9 +792,12 @@ const G = {
   movieDetailCache:{},   // movieId  -> {title,castIds,castNames,isMCU,isDCU}
   pendingMovieDetails:null,
   movieCandidates:[],
+  hintsRemaining: null,  // populated after first hint call
+  hintLoading: false,
 };
 
 // Tracks pairs already played this session (resets on page load)
+// usedActors now tracks per-difficulty to avoid repeating any actor across games
 const usedPairKeys  = { easy: new Set(), medium: new Set(), hard: new Set() };
 const usedActors    = { easy: new Set(), medium: new Set(), hard: new Set() };
 
@@ -975,8 +1033,11 @@ function filteredPairs(diff) {
   const played = usedPairKeys[diff];
   const seen   = usedActors[diff];
   return ALL_PAIRS[diff].filter(p => {
+    // Never repeat an exact pair
     if (played.has(p.start + '|||' + p.target)) return false;
-    if (seen.has(p.start) || seen.has(p.target)) return false;
+    // Skip if BOTH actors have already appeared in this session
+    // (allowing one seen actor keeps variety without full depletion)
+    if (seen.has(p.start) && seen.has(p.target)) return false;
     if (SETTINGS.era !== 'any') {
       const pEra = p.era || 'any';
       if (pEra !== 'any' && pEra !== SETTINGS.era) return false;
@@ -1050,6 +1111,11 @@ async function startGame() {
   document.getElementById('submit-btn').disabled = false;
   document.getElementById('movie-input').value = '';
   document.getElementById('actor-input').value = '';
+  // Reset hint UI
+  document.getElementById('hint-box').classList.remove('visible');
+  document.getElementById('hint-box').textContent = '';
+  document.getElementById('hint-btn').disabled = false;
+  updateHintCounter();
   renderChain(); clearFeedback();
   showScreen('game');
   setTimeout(() => document.getElementById('movie-input').focus(), 300);
@@ -1060,6 +1126,75 @@ function setLoadText(t,s) {
   document.getElementById('load-sub').textContent=s;
 }
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+// ═══════════════════════════════════
+//  HINT (Gemini AI)
+// ═══════════════════════════════════
+function updateHintCounter() {
+  const el = document.getElementById('hint-counter');
+  if (G.hintsRemaining !== null) {
+    el.textContent = `(${G.hintsRemaining} left today)`;
+  } else {
+    el.textContent = '';
+  }
+}
+
+async function requestHint() {
+  if (G.hintLoading) return;
+  G.hintLoading = true;
+
+  const btn = document.getElementById('hint-btn');
+  const box = document.getElementById('hint-box');
+  btn.disabled = true;
+  btn.textContent = '⏳ Thinking…';
+  box.classList.remove('visible');
+
+  try {
+    const res = await fetch('/.netlify/functions/hint', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        currentActor: G.currentActor,
+        targetActor:  G.targetActor,
+        hopsUsed:     G.hops,
+        difficulty:   G.difficulty,
+        chain:        G.chain,
+      })
+    });
+
+    const data = await res.json();
+
+    if (res.status === 429 || data.limitReached) {
+      G.hintsRemaining = 0;
+      box.textContent = data.hint || "Daily hint limit reached — trust your cinephile instincts! 🎬";
+      box.classList.add('visible');
+    } else if (data.hint) {
+      G.hintsRemaining = data.remaining ?? null;
+      box.textContent = `💡 ${data.hint}`;
+      box.classList.add('visible');
+    } else {
+      box.textContent = "Couldn't generate a hint right now. Try again!";
+      box.classList.add('visible');
+    }
+
+    updateHintCounter();
+
+    // Re-enable after 8s so hints can't be spammed per move
+    setTimeout(() => {
+      btn.disabled = G.hintsRemaining === 0;
+      btn.innerHTML = `💡 Hint <span class="hint-counter" id="hint-counter"></span>`;
+      updateHintCounter();
+      G.hintLoading = false;
+    }, 8000);
+
+  } catch (e) {
+    box.textContent = "Hint service unavailable — you're on your own, cinephile!";
+    box.classList.add('visible');
+    btn.disabled = false;
+    btn.innerHTML = `💡 Hint <span class="hint-counter" id="hint-counter"></span>`;
+    G.hintLoading = false;
+  }
+}
 
 // ═══════════════════════════════════
 //  SUBMIT MOVE — 100% TMDB
