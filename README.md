@@ -13,18 +13,20 @@ Three difficulty modes — Easy, Medium, and Hard — control how far apart the 
 
 ## Features
 
-🎭 100+ curated actor pairs across Easy, Medium, and Hard difficulty
-🤖 AI-powered hints via Gemini 2.5 Flash — adaptive to difficulty and your current chain
-🔍 Real-time TMDB validation — every move verified against The Movie Database API
-🎬 Autocomplete for movies and actors powered by live TMDB search
-🏆 Local leaderboard tracking your best chains by hops and difficulty
-⚙️ Settings — toggle MCU/DCU films and filter by era
+* 🎭 100+ curated actor pairs across Easy, Medium, and Hard difficulty
+* 🤖 AI-powered hints via Gemini 2.5 Flash — adaptive to difficulty and your current chain
+* 🔍 Real-time TMDB validation — every move verified against The Movie Database API
+* 🎬 Autocomplete for movies and actors powered by live TMDB search
+* 🏆 Local leaderboard tracking your best chains by hops and difficulty
+* ⚙️ Settings — toggle MCU/DCU films and filter by era
 
 
 ## Tech Stack
-Layer            Technology
-Frontend        Vanilla JS, HTML/CSS — single file, no framework
-Functions       Node.js serverless functions (Netlify Functions)
-AI Hints        Google Gemini 2.5 Flash API
-Movie Data      TMDB (The Movie Database) REST API
-Deployment      Netlify (CI/CD via GitHub)
+| Layer | Technology |
+|---|---|
+| Frontend | Vanilla JS, HTML/CSS — single file, no framework |
+| Functions  |     Node.js serverless functions (Netlify Functions)|
+| AI Hints    |    Google Gemini 2.5 Flash API|
+| Movie Data   |   TMDB (The Movie Database) REST API|
+| Deployment    |  Netlify (CI/CD via GitHub)|
+
