@@ -1,22 +1,25 @@
-# This2Them — Netlify Deployment Guide
+# This2Them 
 
-## Deploy via Drag-and-Drop
+## Can you connect two actors through shared films?
 
-1. Go to [app.netlify.com](https://app.netlify.com) and log in (or sign up free).
-2. From your team dashboard, drag the entire `this2them/` folder onto the drop zone that says **"Drag and drop your site output folder here"**.
-3. Netlify will deploy instantly and give you a live URL.
+This2Them is a cinephile web game inspired by Six Degrees of Kevin Bacon. Given a start actor and a target actor, find the shortest chain of co-stars and films that connects them in as few hops as possible
 
-## Set the TMDB API Key
+## How It Works
 
-The game uses a serverless function to keep your API key secret. You must add it as an environment variable:
+Each "hop" is a movie + co-star. You name a film the current actor appeared in, then name another actor from that film's cast. Repeat until you reach the target.
+Example: Tom Hanks → (Cast Away) → Helen Hunt → (As Good as It Gets) → Jack Nicholson
+Three difficulty modes — Easy, Medium, and Hard — control how far apart the actor pairs are. Hard mode bridges classic Hollywood (pre-1960s) with modern stars, making direct connections impossible.
 
-1. In the Netlify dashboard, open your site.
-2. Go to **Site configuration → Environment variables**.
-3. Click **Add a variable** and set:
-   - **Key:** `TMDB_API_KEY`
-   - **Value:** your TMDB Read Access Token (the long "ey…" token from [themoviedb.org/settings/api](https://www.themoviedb.org/settings/api))
-4. Click **Save**, then go to **Deploys** and trigger a **Redeploy** so the function picks up the new variable.
 
-## Free Tier Limits
+Features
 
-Netlify's free tier includes **~125,000 serverless function invocations per month**. Each TMDB lookup (movie search, cast fetch, actor lookup) counts as one call. Normal gameplay uses roughly 5–15 calls per game session, so the free tier supports thousands of games per month.
+🎭 100+ curated actor pairs across Easy, Medium, and Hard difficulty
+🤖 AI-powered hints via Gemini 2.5 Flash — adaptive to difficulty and your current chain
+🔍 Real-time TMDB validation — every move verified against The Movie Database API
+🎬 Autocomplete for movies and actors powered by live TMDB search
+🏆 Local leaderboard tracking your best chains by hops and difficulty
+⚙️ Settings — toggle MCU/DCU films and filter by era
+
+
+Tech Stack
+LayerTechnologyFrontendVanilla JS, HTML/CSS — single file, no frameworkFunctionsNode.js serverless functions (Netlify Functions)AI HintsGoogle Gemini 2.5 Flash APIMovie DataTMDB (The Movie Database) REST APIDeploymentNetlify (CI/CD via GitHub)
