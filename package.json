@@ -1,0 +1,13 @@
+{
+  "name": "this2them",
+  "version": "1.0.0",
+  "description": "1. Go to [app.netlify.com](https://app.netlify.com) and log in (or sign up free). 2. From your team dashboard, drag the entire `this2them/` folder onto the drop zone that says **\"Drag and drop your site output folder here\"**. 3. Netlify will deploy instantly and give you a live URL.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
