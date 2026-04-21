@@ -11,7 +11,7 @@ Example: Tom Hanks → (Cast Away) → Helen Hunt → (As Good as It Gets) → J
 Three difficulty modes — Easy, Medium, and Hard — control how far apart the actor pairs are. Hard mode bridges classic Hollywood (pre-1960s) with modern stars, making direct connections impossible.
 
 
-Features
+## Features
 
 🎭 100+ curated actor pairs across Easy, Medium, and Hard difficulty
 🤖 AI-powered hints via Gemini 2.5 Flash — adaptive to difficulty and your current chain
@@ -21,5 +21,10 @@ Features
 ⚙️ Settings — toggle MCU/DCU films and filter by era
 
 
-Tech Stack
-LayerTechnologyFrontendVanilla JS, HTML/CSS — single file, no frameworkFunctionsNode.js serverless functions (Netlify Functions)AI HintsGoogle Gemini 2.5 Flash APIMovie DataTMDB (The Movie Database) REST APIDeploymentNetlify (CI/CD via GitHub)
+## Tech Stack
+Layer            Technology
+Frontend        Vanilla JS, HTML/CSS — single file, no framework
+Functions       Node.js serverless functions (Netlify Functions)
+AI Hints        Google Gemini 2.5 Flash API
+Movie Data      TMDB (The Movie Database) REST API
+Deployment      Netlify (CI/CD via GitHub)
