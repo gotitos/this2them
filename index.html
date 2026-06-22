@@ -5,209 +5,226 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>This2Them — The Actor Connection Game</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0a0f; --surface: #13131a; --surface2: #1c1c28; --border: #2a2a3a;
-    --muted: #6b6b8a; --text: #e8e8f0; --text-dim: #9999b5;
-    --gold: #f5c842; --red: #e85d4a; --green: #4acd8d; --blue: #5b8af5; --purple: #9b6df5;
-    --easy: #4acd8d; --medium: #f5a742; --hard: #e85d4a;
-    --film-strip: repeating-linear-gradient(90deg,transparent 0,transparent 8px,#1a1a26 8px,#1a1a26 12px);
+    --paper:#f4ecd6; --paper2:#fffdf6; --ink:#1a1410;
+    --red:#e8472b; --mustard:#f0b32d; --green:#4f9d6e; --peri:#88aaee; --blue:#5b8af5; --purple:#a06ae0;
+    --muted:#7c7361; --text:#1a1410; --text-dim:#5c5648;
+    --gold:#e8472b; /* legacy alias used by a few JS-set bits */
+    --easy:#4f9d6e; --medium:#f0b32d; --hard:#e8472b;
+    --sh:4px 4px 0 0 var(--ink); --sh-lg:6px 6px 0 0 var(--ink);
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:.4}
-  body::after{content:'';position:fixed;top:-30vh;left:50%;transform:translateX(-50%);width:80vw;height:60vh;background:radial-gradient(ellipse,rgba(245,200,66,.06) 0%,transparent 70%);pointer-events:none}
+  body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:.5;mix-blend-mode:multiply}
 
-  .film-strip-bar{height:28px;background:var(--surface2);border-top:2px solid var(--border);border-bottom:2px solid var(--border);position:relative;overflow:hidden;display:flex;align-items:center}
-  .film-strip-bar::before{content:'';position:absolute;inset:0;background:var(--film-strip)}
-  .sprocket-holes{display:flex;gap:20px;padding:0 16px;position:relative;z-index:1}
-  .sprocket-holes span{width:14px;height:10px;background:var(--bg);border-radius:2px;display:block;flex-shrink:0}
+  /* FILM STRIP BARS */
+  .film-strip-bar{height:30px;background:var(--ink);border:none;position:relative;overflow:hidden;display:flex;align-items:center;z-index:400}
+  .film-strip-bar::before{display:none}
+  .sprocket-holes{display:flex;gap:18px;padding:0 14px;position:relative;z-index:1}
+  .sprocket-holes span{width:14px;height:11px;background:var(--paper);border-radius:2px;display:block;flex-shrink:0}
 
-  header{text-align:center;padding:48px 24px 32px}
-  .logo{margin:32px 0 8px;display:flex;flex-direction:column;align-items:center;gap:4px}
-  .logo-title{font-family:'Playfair Display',serif;font-size:clamp(42px,8vw,72px);font-weight:900;letter-spacing:-.03em;color:var(--gold);text-shadow:0 0 60px rgba(245,200,66,.3),0 2px 4px rgba(0,0,0,.5);line-height:1}
-  .logo-sub{font-size:11px;font-weight:500;letter-spacing:.25em;text-transform:uppercase;color:var(--muted)}
+  /* HEADER */
+  header{text-align:center;padding:40px 24px 26px}
+  .marquee-bulbs{display:flex;gap:11px;justify-content:center;margin-bottom:22px}
+  .marquee-bulbs span{width:11px;height:11px;border-radius:50%;border:2px solid var(--ink);display:block;animation:bulb 1.4s ease infinite}
+  .marquee-bulbs span:nth-child(odd){background:var(--red)}
+  .marquee-bulbs span:nth-child(even){background:var(--mustard)}
+  .marquee-bulbs span:nth-child(2){animation-delay:.2s}
+  .marquee-bulbs span:nth-child(3){animation-delay:.4s}
+  .marquee-bulbs span:nth-child(4){animation-delay:.6s}
+  .marquee-bulbs span:nth-child(5){animation-delay:.8s}
+  .marquee-bulbs span:nth-child(6){animation-delay:.5s}
+  .marquee-bulbs span:nth-child(7){animation-delay:.3s}
+  @keyframes bulb{0%,100%{opacity:1}50%{opacity:.45}}
+  .logo{margin:0 0 8px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .logo-title{font-family:'Archivo Black',sans-serif;font-size:clamp(40px,8vw,68px);letter-spacing:-.02em;color:var(--paper);background:var(--red);line-height:1;padding:8px 22px;border:3px solid var(--ink);border-radius:6px;box-shadow:var(--sh-lg);transform:rotate(-1.5deg)}
+  .logo-sub{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--ink);margin-top:4px}
 
-  .container{max-width:860px;margin:0 auto;padding:0 20px 80px}
+  .container{max-width:860px;margin:0 auto;padding:0 20px 90px}
   .screen{display:none}
-  .screen.active{display:block;animation:screenIn .4s cubic-bezier(0,0,.2,1) both}
-  @keyframes screenIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  .screen.active{display:block;animation:screenIn .35s cubic-bezier(0,0,.2,1) both}
+  @keyframes screenIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
   /* HOME */
-  .tagline{text-align:center;color:var(--text-dim);font-size:16px;margin-bottom:32px;line-height:1.6}
-  .tagline strong{color:var(--gold)}
-
-
+  .tagline{text-align:center;color:var(--text-dim);font-size:16px;margin-bottom:30px;line-height:1.6;max-width:560px;margin-left:auto;margin-right:auto}
+  .tagline strong{color:var(--ink);background:var(--mustard);padding:1px 6px;border:2px solid var(--ink);border-radius:4px;font-weight:700;white-space:nowrap}
 
   /* DIFFICULTY */
-  .difficulty-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px}
-  .diff-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 20px;cursor:pointer;transition:all .25s cubic-bezier(.34,1.56,.64,1);text-align:center;position:relative;overflow:hidden}
-  .diff-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .25s;border-radius:16px}
-  .diff-card.easy::before{background:radial-gradient(ellipse at top,rgba(74,205,141,.12),transparent 70%)}
-  .diff-card.medium::before{background:radial-gradient(ellipse at top,rgba(245,167,66,.12),transparent 70%)}
-  .diff-card.hard::before{background:radial-gradient(ellipse at top,rgba(232,93,74,.12),transparent 70%)}
-  .diff-card:hover{transform:translateY(-4px) scale(1.02)}
-  .diff-card:hover::before{opacity:1}
-  .diff-card.easy:hover{border-color:var(--easy);box-shadow:0 8px 32px rgba(74,205,141,.15)}
-  .diff-card.medium:hover{border-color:var(--medium);box-shadow:0 8px 32px rgba(245,167,66,.15)}
-  .diff-card.hard:hover{border-color:var(--hard);box-shadow:0 8px 32px rgba(232,93,74,.15)}
-  .diff-card.selected.easy{border-color:var(--easy);box-shadow:0 0 0 2px rgba(74,205,141,.3)}
-  .diff-card.selected.medium{border-color:var(--medium);box-shadow:0 0 0 2px rgba(245,167,66,.3)}
-  .diff-card.selected.hard{border-color:var(--hard);box-shadow:0 0 0 2px rgba(232,93,74,.3)}
-  .diff-icon{font-size:32px;margin-bottom:12px;display:block}
-  .diff-name{font-family:'Playfair Display',serif;font-size:20px;font-weight:700}
-  .easy .diff-name{color:var(--easy)} .medium .diff-name{color:var(--medium)} .hard .diff-name{color:var(--hard)}
+  .difficulty-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:34px}
+  .diff-card{background:var(--paper2);border:3px solid var(--ink);border-radius:6px;box-shadow:var(--sh);padding:26px 18px;cursor:pointer;transition:transform .12s,box-shadow .12s;text-align:center;position:relative}
+  .diff-card::after{content:'';display:block;width:18px;height:18px;border:3px solid var(--ink);border-radius:50%;margin:0 auto 14px}
+  .diff-card.easy::after{background:var(--easy)}
+  .diff-card.medium::after{background:var(--mustard)}
+  .diff-card.hard::after{background:var(--red)}
+  .diff-card:hover{transform:translate(-3px,-3px);box-shadow:7px 7px 0 0 var(--ink)}
+  .diff-card.selected{transform:translate(4px,4px);box-shadow:0 0 0 0 var(--ink)}
+  .diff-card.selected.easy{background:var(--easy)}
+  .diff-card.selected.medium{background:var(--mustard)}
+  .diff-card.selected.hard{background:var(--red)}
+  .diff-card.selected.hard .diff-name,.diff-card.selected.hard::after{color:var(--paper)}
+  .diff-card.selected.hard::after{background:var(--paper);border-color:var(--paper)}
+  .diff-card.selected.easy::after,.diff-card.selected.medium::after{background:var(--ink)}
+  .diff-name{font-family:'Archivo Black',sans-serif;font-size:19px;color:var(--ink);letter-spacing:-.01em}
 
-  .start-btn{width:100%;padding:18px;background:var(--gold);color:#0a0a0f;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;letter-spacing:.05em;cursor:pointer;transition:all .2s cubic-bezier(.34,1.56,.64,1);text-transform:uppercase}
-  .start-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 32px rgba(245,200,66,.35);background:#f7d55a}
-  .start-btn:disabled{opacity:.4;cursor:not-allowed}
+  .start-btn{width:100%;padding:17px;background:var(--peri);color:var(--ink);border:3px solid var(--ink);border-radius:6px;box-shadow:5px 5px 0 0 var(--ink);font-family:'Archivo Black',sans-serif;font-size:17px;letter-spacing:.01em;cursor:pointer;transition:transform .12s,box-shadow .12s;text-transform:uppercase}
+  .start-btn:hover:not(:disabled){transform:translate(5px,5px);box-shadow:0 0 0 0 var(--ink)}
+  .start-btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:var(--sh)}
 
   .how-steps{display:flex;flex-direction:column;gap:12px}
   .how-step{display:flex;align-items:flex-start;gap:14px;font-size:14px;color:var(--text-dim);line-height:1.5}
-  .how-step-num{min-width:24px;height:24px;background:var(--surface2);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--gold);margin-top:1px;flex-shrink:0}
+  .how-step strong{color:var(--ink)}
+  .how-step-num{min-width:26px;height:26px;background:var(--mustard);border:2px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--ink);margin-top:1px;flex-shrink:0}
 
   /* ICON BUTTONS */
-  .icon-btn-row{display:flex;justify-content:flex-end;gap:8px;margin-bottom:20px}
-  .icon-btn{background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.5);color:var(--gold);width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'DM Sans',sans-serif;flex-shrink:0}
-  .icon-btn:hover{background:var(--gold);color:#0a0a0f;border-color:var(--gold);box-shadow:0 0 16px rgba(245,200,66,.4)}
+  .icon-btn-row{display:flex;justify-content:flex-end;gap:10px;margin-bottom:18px}
+  .icon-btn{background:var(--paper2);border:3px solid var(--ink);color:var(--ink);width:40px;height:40px;border-radius:6px;box-shadow:3px 3px 0 0 var(--ink);cursor:pointer;font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:transform .1s,box-shadow .1s,background .1s;font-family:'DM Sans',sans-serif;flex-shrink:0}
+  .icon-btn:hover{background:var(--mustard);transform:translate(3px,3px);box-shadow:0 0 0 0 var(--ink)}
 
   /* MODAL */
-  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal-overlay{position:fixed;inset:0;background:rgba(26,20,16,.55);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
   .modal-overlay.open{display:flex;animation:screenIn .2s ease both}
-  .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
-  .modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;line-height:1;padding:4px}
-  .modal-close:hover{color:var(--text)}
-  .modal-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--gold);margin-bottom:20px}
-  .setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)}
+  .modal-box{background:var(--paper);border:3px solid var(--ink);border-radius:8px;box-shadow:8px 8px 0 0 var(--ink);padding:30px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
+  .modal-close{position:absolute;top:12px;right:14px;background:var(--red);border:2px solid var(--ink);color:var(--paper);font-size:18px;cursor:pointer;line-height:1;width:30px;height:30px;border-radius:5px;display:flex;align-items:center;justify-content:center}
+  .modal-close:hover{background:var(--ink)}
+  .modal-title{font-family:'Archivo Black',sans-serif;font-size:22px;color:var(--ink);background:var(--mustard);display:inline-block;padding:4px 14px;border:2px solid var(--ink);border-radius:5px;margin-bottom:22px}
+  .setting-row{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:2px dashed var(--ink)}
   .setting-row:last-child{border-bottom:none}
-  .setting-row.column{flex-direction:column;align-items:flex-start;gap:10px}
-  .setting-label{font-size:14px;font-weight:600;color:var(--text)}
+  .setting-row.column{flex-direction:column;align-items:flex-start;gap:12px}
+  .setting-label{font-size:15px;font-weight:700;color:var(--ink)}
   .setting-desc{font-size:11px;color:var(--muted);margin-top:2px}
-  .toggle-switch{position:relative;width:44px;height:24px;flex-shrink:0}
+  .toggle-switch{position:relative;width:50px;height:28px;flex-shrink:0}
   .toggle-switch input{opacity:0;width:0;height:0;position:absolute}
-  .toggle-track{position:absolute;inset:0;background:var(--border);border-radius:24px;cursor:pointer;transition:background .2s}
-  .toggle-switch input:checked + .toggle-track{background:var(--gold)}
-  .toggle-track::after{content:'';position:absolute;left:3px;top:3px;width:18px;height:18px;background:white;border-radius:50%;transition:transform .2s}
-  .toggle-switch input:checked + .toggle-track::after{transform:translateX(20px)}
+  .toggle-track{position:absolute;inset:0;background:var(--paper2);border:2px solid var(--ink);border-radius:5px;cursor:pointer;transition:background .15s}
+  .toggle-switch input:checked + .toggle-track{background:var(--green)}
+  .toggle-track::after{content:'';position:absolute;left:2px;top:2px;width:20px;height:20px;background:var(--ink);border-radius:3px;transition:transform .15s}
+  .toggle-switch input:checked + .toggle-track::after{transform:translateX(22px)}
   .era-group{display:flex;gap:8px;flex-wrap:wrap}
-  .era-btn{padding:5px 14px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .2s}
-  .era-btn.active{background:rgba(245,200,66,.15);border-color:var(--gold);color:var(--gold)}
+  .era-btn{padding:7px 14px;border-radius:5px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid var(--ink);background:var(--paper2);color:var(--ink);font-family:'DM Sans',sans-serif;box-shadow:2px 2px 0 0 var(--ink);transition:transform .1s,box-shadow .1s,background .1s}
+  .era-btn:hover{transform:translate(2px,2px);box-shadow:0 0 0 0 var(--ink)}
+  .era-btn.active{background:var(--peri)}
 
   /* GAME HEADER */
-  .game-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:14px}
-  .game-meta{display:flex;align-items:center;gap:16px}
-  .diff-badge{padding:4px 12px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
-  .diff-badge.easy{background:rgba(74,205,141,.15);color:var(--easy);border:1px solid rgba(74,205,141,.3)}
-  .diff-badge.medium{background:rgba(245,167,66,.15);color:var(--medium);border:1px solid rgba(245,167,66,.3)}
-  .diff-badge.hard{background:rgba(232,93,74,.15);color:var(--hard);border:1px solid rgba(232,93,74,.3)}
-  .hops-display{font-family:'DM Mono',monospace;font-size:13px;color:var(--text-dim)}
-  .hops-display span{color:var(--gold);font-weight:600}
-  .quit-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
-  .quit-btn:hover{border-color:var(--red);color:var(--red)}
+  .game-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding:14px 18px;background:var(--paper2);border:3px solid var(--ink);border-radius:6px;box-shadow:var(--sh)}
+  .game-meta{display:flex;align-items:center;gap:14px}
+  .diff-badge{padding:5px 12px;border-radius:5px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border:2px solid var(--ink);color:var(--ink)}
+  .diff-badge.easy{background:var(--easy)}
+  .diff-badge.medium{background:var(--mustard)}
+  .diff-badge.hard{background:var(--red);color:var(--paper)}
+  .hops-display{font-family:'DM Mono',monospace;font-size:13px;color:var(--text-dim);font-weight:500}
+  .hops-display span{color:var(--ink);font-weight:700}
+  .quit-btn{background:var(--paper2);border:2px solid var(--ink);color:var(--ink);padding:7px 14px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:2px 2px 0 0 var(--ink);transition:transform .1s,box-shadow .1s,background .1s;font-family:'DM Sans',sans-serif}
+  .quit-btn:hover{background:var(--red);color:var(--paper);transform:translate(2px,2px);box-shadow:0 0 0 0 var(--ink)}
 
   /* CHAIN */
-  .chain-container{margin-bottom:28px}
-  .chain-label{font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
-  .chain{display:flex;flex-wrap:wrap;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;min-height:68px;gap:0;overflow-x:auto}
+  .chain-container{margin-bottom:26px}
+  .chain-label{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .chain{display:flex;flex-wrap:wrap;align-items:center;background:var(--paper2);border:3px solid var(--ink);border-radius:6px;box-shadow:var(--sh);padding:16px;min-height:70px;gap:0;overflow-x:auto}
   .chain-node{display:flex;align-items:center;animation:nodeIn .3s cubic-bezier(.34,1.56,.64,1) both}
   @keyframes nodeIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
-  .chain-actor{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--text);white-space:nowrap}
-  .chain-actor.start{border-color:var(--gold);color:var(--gold)}
-  .chain-actor.end{border-color:var(--purple);color:var(--purple)}
-  .chain-actor.current{border-color:var(--blue);color:var(--blue);box-shadow:0 0 0 2px rgba(91,138,245,.2)}
-  .chain-movie{display:flex;flex-direction:column;align-items:center;padding:0 10px}
-  .chain-movie-label{font-size:10px;color:var(--muted);font-style:italic;text-align:center;max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .chain-arrow{color:var(--muted);font-size:16px;flex-shrink:0;padding:0 2px}
+  .chain-actor{background:var(--paper);border:2px solid var(--ink);border-radius:5px;box-shadow:2px 2px 0 0 var(--ink);padding:8px 13px;font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap}
+  .chain-actor.start{background:var(--mustard)}
+  .chain-actor.end{background:var(--purple);color:var(--paper)}
+  .chain-actor.current{background:var(--peri)}
+  .chain-movie{display:flex;flex-direction:column;align-items:center;padding:0 8px}
+  .chain-movie-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);font-style:italic;text-align:center;max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chain-arrow{color:var(--ink);font-size:16px;font-weight:700;flex-shrink:0;padding:0 2px}
 
   /* TARGET */
-  .target-actor{display:flex;align-items:center;gap:8px;background:rgba(155,109,245,.08);border:1px dashed rgba(155,109,245,.4);border-radius:10px;padding:10px 16px;font-size:13px;color:var(--purple);font-weight:600;animation:pulseTarget 2.5s ease infinite;margin-bottom:24px}
-  .target-actor .label{font-size:10px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
-  @keyframes pulseTarget{0%,100%{box-shadow:0 0 0 0 rgba(155,109,245,.4)}50%{box-shadow:0 0 0 8px rgba(155,109,245,0)}}
+  .target-actor{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--purple);border:3px solid var(--ink);border-radius:6px;box-shadow:var(--sh);padding:12px 16px;font-size:14px;color:var(--paper);font-weight:700;margin-bottom:24px}
+  .target-actor .label{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--paper);opacity:.8}
 
   /* INPUT */
-  .input-section{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px}
-  .input-section h3{font-family:'Playfair Display',serif;font-size:16px;color:var(--text);margin-bottom:4px}
+  .input-section{background:var(--paper2);border:3px solid var(--ink);border-radius:6px;box-shadow:var(--sh);padding:22px;margin-bottom:18px}
+  .input-section h3{font-family:'Archivo Black',sans-serif;font-size:16px;color:var(--ink);margin-bottom:14px}
+  .input-section h3 span{background:var(--peri);padding:1px 8px;border:2px solid var(--ink);border-radius:4px;color:var(--ink)!important}
   .input-hint{font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.5}
   .input-row{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end}
-  .input-group{display:flex;flex-direction:column;gap:6px}
-  .input-group label{font-size:11px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+  .input-group{display:flex;flex-direction:column;gap:7px}
+  .input-group label{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
   .input-wrap{position:relative}
-  .game-input{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;transition:all .15s;outline:none}
+  .game-input{background:var(--paper);border:2px solid var(--ink);border-radius:5px;padding:12px 14px;color:var(--ink);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;width:100%;transition:box-shadow .12s,transform .12s;outline:none}
   .game-input::placeholder{color:var(--muted)}
-  .game-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(91,138,245,.15)}
-  .suggestions{position:absolute;top:100%;left:0;right:0;background:var(--surface2);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;z-index:200;max-height:200px;overflow-y:auto;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+  .game-input:focus{box-shadow:3px 3px 0 0 var(--blue);transform:translate(-1px,-1px)}
+  .suggestions{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--paper2);border:2px solid var(--ink);border-radius:5px;z-index:200;max-height:200px;overflow-y:auto;display:none;box-shadow:var(--sh)}
   .suggestions.open{display:block}
-  .suggestion-item{padding:10px 16px;font-size:13px;cursor:pointer;color:var(--text-dim);transition:background .1s;border-bottom:1px solid var(--border)}
+  .suggestion-item{padding:10px 14px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text-dim);transition:background .1s,color .1s;border-bottom:1px dashed var(--ink)}
   .suggestion-item:last-child{border-bottom:none}
-  .suggestion-item:hover{background:var(--surface);color:var(--text)}
-  .submit-btn{padding:12px 22px;background:var(--blue);color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s cubic-bezier(.34,1.56,.64,1);min-width:110px;height:46px}
-  .submit-btn:hover:not(:disabled){background:#4a7af0;transform:translateY(-2px);box-shadow:0 6px 20px rgba(91,138,245,.3)}
-  .submit-btn:active:not(:disabled){transform:translateY(0) scale(.98)}
-  .submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  .suggestion-item:hover{background:var(--peri);color:var(--ink)}
+  .submit-btn{padding:12px 22px;background:var(--red);color:var(--paper);border:3px solid var(--ink);border-radius:5px;box-shadow:4px 4px 0 0 var(--ink);font-family:'Archivo Black',sans-serif;font-size:14px;cursor:pointer;white-space:nowrap;transition:transform .1s,box-shadow .1s;min-width:110px;height:48px;text-transform:uppercase}
+  .submit-btn:hover:not(:disabled){transform:translate(4px,4px);box-shadow:0 0 0 0 var(--ink)}
+  .submit-btn:disabled{opacity:.5;cursor:not-allowed;box-shadow:var(--sh)}
 
   /* FEEDBACK */
-  .feedback-box{border-radius:12px;padding:16px 20px;font-size:14px;line-height:1.6;margin-bottom:16px;display:none;animation:screenIn .3s ease both}
-  .feedback-box.success{display:block;background:rgba(74,205,141,.08);border:1px solid rgba(74,205,141,.25);color:var(--green)}
-  .feedback-box.error{display:block;background:rgba(232,93,74,.08);border:1px solid rgba(232,93,74,.25);color:var(--red)}
-  .feedback-box.info{display:block;background:rgba(91,138,245,.08);border:1px solid rgba(91,138,245,.25);color:var(--blue)}
+  .feedback-box{border-radius:6px;padding:14px 18px;font-size:14px;font-weight:600;line-height:1.5;margin-bottom:16px;display:none;border:3px solid var(--ink);box-shadow:var(--sh);animation:screenIn .3s ease both}
+  .feedback-box.success{display:block;background:var(--green);color:var(--paper)}
+  .feedback-box.error{display:block;background:var(--red);color:var(--paper)}
+  .feedback-box.info{display:block;background:var(--peri);color:var(--ink)}
 
-  .loading-overlay{display:none;text-align:center;padding:20px;color:var(--muted);font-size:14px}
-  .loading-overlay.active{display:block}
-  .spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
-  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-overlay{display:none;align-items:center;justify-content:center;gap:10px;text-align:center;padding:16px;color:var(--ink);font-size:13px;font-weight:600}
+  .loading-overlay.active{display:flex}
+  .loading-overlay #load-msg{font-family:'DM Mono',monospace;letter-spacing:.04em}
+
+  /* CLAPPERBOARD LOADER */
+  .clap{position:relative;display:inline-block;flex-shrink:0;vertical-align:middle}
+  .clap .board,.clap .arm{position:absolute;left:0;border:2px solid var(--ink);box-sizing:border-box}
+  .clap .board{bottom:0;width:100%;height:64%;background:var(--ink);border-radius:3px}
+  .clap .arm{top:0;width:100%;height:30%;background:repeating-linear-gradient(112deg,var(--ink) 0 var(--st),var(--paper) var(--st) calc(var(--st) * 2));border-radius:3px;transform-origin:left bottom;animation:clapper 1.5s cubic-bezier(.55,0,.25,1) infinite}
+  .clap-sm{width:28px;height:24px;--st:4px}
+  .clap-lg{width:74px;height:62px;--st:9px}
+  @keyframes clapper{0%,55%,100%{transform:rotate(0deg)}22%{transform:rotate(-32deg)}40%{transform:rotate(0deg)}}
 
   .action-bar{display:flex;justify-content:space-between;align-items:center}
 
   /* WIN */
-  .win-screen{text-align:center;padding:40px 20px}
-  .win-icon{font-size:72px;display:block;margin-bottom:16px;animation:winPop .5s cubic-bezier(.34,1.56,.64,1) both}
+  .win-screen{text-align:center;padding:36px 20px}
+  .win-icon{font-size:68px;display:block;margin-bottom:14px;animation:winPop .5s cubic-bezier(.34,1.56,.64,1) both}
   @keyframes winPop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
-  .win-title{font-family:'Playfair Display',serif;font-size:42px;font-weight:900;color:var(--gold);margin-bottom:8px}
-  .win-subtitle{color:var(--text-dim);font-size:16px;margin-bottom:40px}
-  .win-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px}
-  .win-stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 16px}
-  .win-stat-value{font-family:'Playfair Display',serif;font-size:36px;font-weight:700;color:var(--gold);display:block}
-  .win-stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.15em;margin-top:4px;display:block}
-  .win-chain-recap{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:32px;text-align:left}
-  .win-chain-recap h3{font-family:'Playfair Display',serif;font-size:16px;color:var(--gold);margin-bottom:16px}
-  .win-chain-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
+  .win-title{font-family:'Archivo Black',sans-serif;font-size:clamp(34px,7vw,48px);color:var(--paper);background:var(--red);display:inline-block;padding:6px 20px;border:3px solid var(--ink);border-radius:6px;box-shadow:var(--sh-lg);transform:rotate(-1deg);margin-bottom:18px}
+  .win-subtitle{color:var(--text-dim);font-size:16px;font-weight:600;margin-bottom:36px}
+  .win-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:34px}
+  .win-stat{background:var(--paper2);border:3px solid var(--ink);border-radius:6px;box-shadow:var(--sh);padding:22px 14px}
+  .win-stat-value{font-family:'Archivo Black',sans-serif;font-size:34px;color:var(--ink);display:block}
+  .win-stat-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-top:6px;display:block}
+  .win-chain-recap{background:var(--paper2);border:3px solid var(--ink);border-radius:6px;box-shadow:var(--sh);padding:22px;margin-bottom:28px;text-align:left}
+  .win-chain-recap h3{font-family:'Archivo Black',sans-serif;font-size:15px;color:var(--ink);margin-bottom:16px}
+  .win-chain-item{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:2px dashed var(--ink);font-size:13px}
   .win-chain-item:last-child{border-bottom:none}
-  .win-chain-item .actor-name{font-weight:600;color:var(--text)}
+  .win-chain-item .actor-name{font-weight:700;color:var(--ink)}
   .win-chain-item .via{color:var(--muted);font-style:italic;font-size:12px;margin-top:2px}
-  .play-again-btn{width:100%;padding:18px;background:var(--gold);color:#0a0a0f;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;letter-spacing:.05em;cursor:pointer;transition:all .2s cubic-bezier(.34,1.56,.64,1);text-transform:uppercase;margin-bottom:12px}
-  .play-again-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(245,200,66,.35)}
+  .play-again-btn{width:100%;padding:16px;background:var(--mustard);color:var(--ink);border:3px solid var(--ink);border-radius:6px;box-shadow:5px 5px 0 0 var(--ink);font-family:'Archivo Black',sans-serif;font-size:16px;cursor:pointer;transition:transform .12s,box-shadow .12s;text-transform:uppercase;margin-bottom:12px}
+  .play-again-btn:hover{transform:translate(5px,5px);box-shadow:0 0 0 0 var(--ink)}
 
   /* LEADERBOARD */
-  .leaderboard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:32px;text-align:left}
-  .leaderboard h3{font-family:'Playfair Display',serif;font-size:16px;color:var(--gold);margin-bottom:16px}
+  .leaderboard{background:var(--paper2);border:3px solid var(--ink);border-radius:6px;box-shadow:var(--sh);padding:22px;margin-bottom:32px;text-align:left}
+  .leaderboard h3{font-family:'Archivo Black',sans-serif;font-size:15px;color:var(--ink);margin-bottom:16px}
   .lb-empty{color:var(--muted);font-size:13px;text-align:center;padding:12px 0}
-  .lb-row{display:grid;grid-template-columns:28px 1fr auto auto;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+  .lb-row{display:grid;grid-template-columns:28px 1fr auto auto;align-items:center;gap:10px;padding:10px 0;border-bottom:2px dashed var(--ink);font-size:13px}
   .lb-row:last-child{border-bottom:none}
-  .lb-rank{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-align:center}
+  .lb-rank{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--muted);text-align:center}
   .lb-pair{color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .lb-pair strong{color:var(--text);font-weight:600}
-  .lb-hops{font-family:'DM Mono',monospace;font-size:12px;color:var(--gold);font-weight:600;white-space:nowrap}
-  .lb-diff{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:999px}
-  .lb-diff.easy{background:rgba(74,205,141,.12);color:var(--easy)}
-  .lb-diff.medium{background:rgba(245,167,66,.12);color:var(--medium)}
-  .lb-diff.hard{background:rgba(232,93,74,.12);color:var(--hard)}
-  .lb-clear{background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;float:right;margin-top:-36px}
+  .lb-pair strong{color:var(--ink);font-weight:700}
+  .lb-hops{font-family:'DM Mono',monospace;font-size:12px;color:var(--red);font-weight:700;white-space:nowrap}
+  .lb-diff{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:4px;border:2px solid var(--ink);color:var(--ink)}
+  .lb-diff.easy{background:var(--easy)}
+  .lb-diff.medium{background:var(--mustard)}
+  .lb-diff.hard{background:var(--red);color:var(--paper)}
+  .lb-clear{background:none;border:none;color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;float:right;margin-top:-34px;text-decoration:underline}
   .lb-clear:hover{color:var(--red)}
 
   /* LOADING SCREEN */
-  .loading-screen{text-align:center;padding:80px 20px}
-  .clapperboard{font-size:64px;display:block;margin-bottom:24px;animation:clap .8s ease infinite alternate}
-  @keyframes clap{from{transform:rotate(-5deg)}to{transform:rotate(5deg)}}
-  .loading-text{font-family:'Playfair Display',serif;font-size:24px;color:var(--gold);margin-bottom:8px}
-  .loading-sub{color:var(--muted);font-size:14px}
+  .loading-screen{display:flex;align-items:center;justify-content:center;padding:80px 20px}
+  .loader-card{display:flex;align-items:center;gap:20px;background:var(--paper2);border:3px solid var(--ink);border-radius:8px;box-shadow:var(--sh-lg);padding:24px 28px;text-align:left}
+  .loading-text{font-family:'Archivo Black',sans-serif;font-size:20px;color:var(--ink);margin-bottom:4px}
+  .loading-sub{font-family:'DM Mono',monospace;color:var(--muted);font-size:13px}
 
   /* HINT */
-  .hint-btn{padding:8px 16px;background:rgba(155,109,245,.12);border:1px solid rgba(155,109,245,.4);color:var(--purple);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px}
-  .hint-btn:hover:not(:disabled){background:rgba(155,109,245,.25);border-color:var(--purple);box-shadow:0 0 12px rgba(155,109,245,.25)}
-  .hint-btn:disabled{opacity:.4;cursor:not-allowed}
-  .hint-counter{font-size:10px;opacity:.7}
-  .hint-box{border-radius:12px;padding:14px 18px;font-size:13px;line-height:1.6;margin-bottom:16px;display:none;background:rgba(155,109,245,.08);border:1px solid rgba(155,109,245,.25);color:#c4a8f5;animation:screenIn .3s ease both;font-style:italic}
+  .hint-btn{padding:9px 16px;background:var(--purple);border:3px solid var(--ink);color:var(--paper);border-radius:5px;box-shadow:3px 3px 0 0 var(--ink);font-size:13px;font-weight:700;cursor:pointer;transition:transform .1s,box-shadow .1s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px}
+  .hint-btn:hover:not(:disabled){transform:translate(3px,3px);box-shadow:0 0 0 0 var(--ink)}
+  .hint-btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:var(--sh)}
+  .hint-counter{font-size:10px;opacity:.85;font-weight:500}
+  .hint-box{border-radius:6px;padding:14px 18px;font-size:13px;font-weight:600;line-height:1.6;margin-bottom:16px;display:none;background:var(--paper);border:3px solid var(--purple);box-shadow:4px 4px 0 0 var(--purple);color:var(--ink);animation:screenIn .3s ease both;font-style:italic}
   .hint-box.visible{display:block}
 
   @media(max-width:600px){
@@ -223,6 +240,7 @@
 <div class="film-strip-bar"><div class="sprocket-holes" id="sprockets-top"></div></div>
 
 <header>
+  <div class="marquee-bulbs"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
   <div class="logo">
     <div class="logo-title">This2Them</div>
     <div class="logo-sub">How well do you know movies?</div>
@@ -259,9 +277,13 @@
   <!-- ── LOADING ── -->
   <div id="screen-loading" class="screen">
     <div class="loading-screen">
-      <span class="clapperboard">🎬</span>
-      <div class="loading-text" id="load-title">Setting the scene…</div>
-      <div class="loading-sub"  id="load-sub">Consulting TMDB archives…</div>
+      <div class="loader-card">
+        <span class="clap clap-lg"><span class="board"></span><span class="arm"></span></span>
+        <div>
+          <div class="loading-text" id="load-title">Setting the scene…</div>
+          <div class="loading-sub"  id="load-sub">Consulting TMDB archives…</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -288,7 +310,7 @@
 
     <div class="feedback-box" id="feedback-box"></div>
     <div class="hint-box" id="hint-box"></div>
-    <div class="loading-overlay" id="load-overlay"><span class="spinner"></span><span id="load-msg">Checking TMDB…</span></div>
+    <div class="loading-overlay" id="load-overlay"><span class="clap clap-sm"><span class="board"></span><span class="arm"></span></span><span id="load-msg">Checking TMDB…</span></div>
 
     <div class="input-section">
       <h3>Make Your Move — <span id="cur-actor-name" style="color:var(--blue)">—</span></h3>
@@ -594,147 +616,176 @@ const ALL_PAIRS = {
     // The 12+ year gap makes shared films impossible — all pairs guaranteed to require 2+ hops
 
     // Humphrey Bogart (died Jan 1957)
-    { start:'Humphrey Bogart',    target:'Tom Hanks',          tags:[], era:'any' },
-    { start:'Humphrey Bogart',    target:'Meryl Streep',       tags:[], era:'any' },
-    { start:'Humphrey Bogart',    target:'Denzel Washington',  tags:[], era:'any' },
+    { start:'Humphrey Bogart',    target:'Tom Hanks',          tags:[], era:'classic' },
+    { start:'Humphrey Bogart',    target:'Meryl Streep',       tags:[], era:'classic' },
+    { start:'Humphrey Bogart',    target:'Denzel Washington',  tags:[], era:'classic' },
 
     // Clark Gable (died Nov 1960)
-    { start:'Clark Gable',        target:'Brad Pitt',          tags:[], era:'any' },
-    { start:'Clark Gable',        target:'Julia Roberts',      tags:[], era:'any' },
-    { start:'Clark Gable',        target:'Russell Crowe',      tags:[], era:'any' },
+    { start:'Clark Gable',        target:'Brad Pitt',          tags:[], era:'classic' },
+    { start:'Clark Gable',        target:'Julia Roberts',      tags:[], era:'classic' },
+    { start:'Clark Gable',        target:'Russell Crowe',      tags:[], era:'classic' },
 
     // James Dean (died Sep 1955)
-    { start:'James Dean',         target:'Leonardo DiCaprio',  tags:[], era:'any' },
-    { start:'James Dean',         target:'Keanu Reeves',       tags:[], era:'any' },
-    { start:'James Dean',         target:'Will Smith',         tags:[], era:'any' },
+    { start:'James Dean',         target:'Leonardo DiCaprio',  tags:[], era:'classic' },
+    { start:'James Dean',         target:'Keanu Reeves',       tags:[], era:'classic' },
+    { start:'James Dean',         target:'Will Smith',         tags:[], era:'classic' },
 
     // Grace Kelly (retired from acting 1956)
-    { start:'Grace Kelly',        target:'Cate Blanchett',     tags:[], era:'any' },
-    { start:'Grace Kelly',        target:'Nicole Kidman',      tags:[], era:'any' },
-    { start:'Grace Kelly',        target:'Emma Thompson',      tags:[], era:'any' },
+    { start:'Grace Kelly',        target:'Cate Blanchett',     tags:[], era:'classic' },
+    { start:'Grace Kelly',        target:'Nicole Kidman',      tags:[], era:'classic' },
+    { start:'Grace Kelly',        target:'Emma Thompson',      tags:[], era:'classic' },
 
     // Greta Garbo (retired 1941)
-    { start:'Greta Garbo',        target:'Charlize Theron',    tags:[], era:'any' },
-    { start:'Greta Garbo',        target:'Scarlett Johansson', tags:[], era:'any' },
-    { start:'Greta Garbo',        target:'Kate Winslet',       tags:[], era:'any' },
+    { start:'Greta Garbo',        target:'Charlize Theron',    tags:[], era:'classic' },
+    { start:'Greta Garbo',        target:'Scarlett Johansson', tags:[], era:'classic' },
+    { start:'Greta Garbo',        target:'Kate Winslet',       tags:[], era:'classic' },
 
     // Marilyn Monroe (died Aug 1962)
-    { start:'Marilyn Monroe',     target:'Halle Berry',        tags:[], era:'any' },
-    { start:'Marilyn Monroe',     target:'Anne Hathaway',      tags:[], era:'any' },
-    { start:'Marilyn Monroe',     target:'Margot Robbie',      tags:[], era:'any' },
+    { start:'Marilyn Monroe',     target:'Halle Berry',        tags:[], era:'classic' },
+    { start:'Marilyn Monroe',     target:'Anne Hathaway',      tags:[], era:'classic' },
+    { start:'Marilyn Monroe',     target:'Margot Robbie',      tags:[], era:'classic' },
 
     // Gary Cooper (died May 1961)
-    { start:'Gary Cooper',        target:'Tom Cruise',         tags:[], era:'any' },
-    { start:'Gary Cooper',        target:'George Clooney',     tags:[], era:'any' },
-    { start:'Gary Cooper',        target:'Kevin Bacon',        tags:[], era:'any' },
+    { start:'Gary Cooper',        target:'Tom Cruise',         tags:[], era:'classic' },
+    { start:'Gary Cooper',        target:'George Clooney',     tags:[], era:'classic' },
+    { start:'Gary Cooper',        target:'Kevin Bacon',        tags:[], era:'classic' },
 
     // Jean Harlow (died Jun 1937)
-    { start:'Jean Harlow',        target:'Jennifer Lawrence',  tags:[], era:'any' },
-    { start:'Jean Harlow',        target:'Reese Witherspoon',  tags:[], era:'any' },
-    { start:'Jean Harlow',        target:'Amy Adams',          tags:[], era:'any' },
+    { start:'Jean Harlow',        target:'Jennifer Lawrence',  tags:[], era:'classic' },
+    { start:'Jean Harlow',        target:'Reese Witherspoon',  tags:[], era:'classic' },
+    { start:'Jean Harlow',        target:'Amy Adams',          tags:[], era:'classic' },
 
     // Carole Lombard (died Jan 1942)
-    { start:'Carole Lombard',     target:'Sandra Bullock',     tags:[], era:'any' },
-    { start:'Carole Lombard',     target:'Winona Ryder',       tags:[], era:'any' },
-    { start:'Carole Lombard',     target:'Gwyneth Paltrow',    tags:[], era:'any' },
+    { start:'Carole Lombard',     target:'Sandra Bullock',     tags:[], era:'classic' },
+    { start:'Carole Lombard',     target:'Winona Ryder',       tags:[], era:'classic' },
+    { start:'Carole Lombard',     target:'Gwyneth Paltrow',    tags:[], era:'classic' },
 
     // William Powell (retired 1955)
-    { start:'William Powell',     target:'Hugh Jackman',       tags:[], era:'any' },
-    { start:'William Powell',     target:'Matt Damon',         tags:[], era:'any' },
-    { start:'William Powell',     target:'Colin Firth',        tags:[], era:'any' },
+    { start:'William Powell',     target:'Hugh Jackman',       tags:[], era:'classic' },
+    { start:'William Powell',     target:'Matt Damon',         tags:[], era:'classic' },
+    { start:'William Powell',     target:'Colin Firth',        tags:[], era:'classic' },
 
     // Tyrone Power (died Nov 1958)
-    { start:'Tyrone Power',       target:'Johnny Depp',        tags:[], era:'any' },
-    { start:'Tyrone Power',       target:'Nicolas Cage',       tags:[], era:'any' },
-    { start:'Tyrone Power',       target:'Orlando Bloom',      tags:[], era:'any' },
+    { start:'Tyrone Power',       target:'Johnny Depp',        tags:[], era:'classic' },
+    { start:'Tyrone Power',       target:'Nicolas Cage',       tags:[], era:'classic' },
+    { start:'Tyrone Power',       target:'Orlando Bloom',      tags:[], era:'classic' },
 
     // Errol Flynn (died Oct 1959)
-    { start:'Errol Flynn',        target:'Hugh Grant',         tags:[], era:'any' },
-    { start:'Errol Flynn',        target:'Jim Carrey',         tags:[], era:'any' },
-    { start:'Errol Flynn',        target:'Viggo Mortensen',    tags:[], era:'any' },
+    { start:'Errol Flynn',        target:'Hugh Grant',         tags:[], era:'classic' },
+    { start:'Errol Flynn',        target:'Jim Carrey',         tags:[], era:'classic' },
+    { start:'Errol Flynn',        target:'Viggo Mortensen',    tags:[], era:'classic' },
 
     // Charles Laughton (died Dec 1962)
-    { start:'Charles Laughton',   target:'Geoffrey Rush',      tags:[], era:'any' },
-    { start:'Charles Laughton',   target:'Tim Robbins',        tags:[], era:'any' },
-    { start:'Charles Laughton',   target:'Christian Bale',     tags:[], era:'any' },
+    { start:'Charles Laughton',   target:'Geoffrey Rush',      tags:[], era:'classic' },
+    { start:'Charles Laughton',   target:'Tim Robbins',        tags:[], era:'classic' },
+    { start:'Charles Laughton',   target:'Christian Bale',     tags:[], era:'classic' },
 
     // Buster Keaton (died Feb 1966)
-    { start:'Buster Keaton',      target:'Steve Martin',       tags:[], era:'any' },
-    { start:'Buster Keaton',      target:'Robin Williams',     tags:[], era:'any' },
-    { start:'Buster Keaton',      target:'Billy Crystal',      tags:[], era:'any' },
+    { start:'Buster Keaton',      target:'Steve Martin',       tags:[], era:'classic' },
+    { start:'Buster Keaton',      target:'Robin Williams',     tags:[], era:'classic' },
+    { start:'Buster Keaton',      target:'Billy Crystal',      tags:[], era:'classic' },
 
     // Hedy Lamarr (retired 1958)
-    { start:'Hedy Lamarr',        target:'Julianne Moore',     tags:[], era:'any' },
-    { start:'Hedy Lamarr',        target:'Naomi Watts',        tags:[], era:'any' },
-    { start:'Hedy Lamarr',        target:'Rachel McAdams',     tags:[], era:'any' },
+    { start:'Hedy Lamarr',        target:'Julianne Moore',     tags:[], era:'classic' },
+    { start:'Hedy Lamarr',        target:'Naomi Watts',        tags:[], era:'classic' },
+    { start:'Hedy Lamarr',        target:'Rachel McAdams',     tags:[], era:'classic' },
 
     // Betty Grable (retired 1955)
-    { start:'Betty Grable',       target:'Natalie Portman',    tags:[], era:'any' },
-    { start:'Betty Grable',       target:'Hilary Swank',       tags:[], era:'any' },
-    { start:'Betty Grable',       target:'Kate Hudson',        tags:[], era:'any' },
+    { start:'Betty Grable',       target:'Natalie Portman',    tags:[], era:'classic' },
+    { start:'Betty Grable',       target:'Hilary Swank',       tags:[], era:'classic' },
+    { start:'Betty Grable',       target:'Kate Hudson',        tags:[], era:'classic' },
 
     // John Garfield (died May 1952)
-    { start:'John Garfield',      target:'Al Pacino',          tags:[], era:'any' },
-    { start:'John Garfield',      target:'Robert De Niro',     tags:[], era:'any' },
-    { start:'John Garfield',      target:'Dustin Hoffman',     tags:[], era:'any' },
+    { start:'John Garfield',      target:'Al Pacino',          tags:[], era:'classic' },
+    { start:'John Garfield',      target:'Robert De Niro',     tags:[], era:'classic' },
+    { start:'John Garfield',      target:'Dustin Hoffman',     tags:[], era:'classic' },
 
     // Alan Ladd (died Jan 1964)
-    { start:'Alan Ladd',          target:'Bruce Willis',       tags:[], era:'any' },
-    { start:'Alan Ladd',          target:'Mel Gibson',         tags:[], era:'any' },
-    { start:'Alan Ladd',          target:'Harrison Ford',      tags:[], era:'any' },
+    { start:'Alan Ladd',          target:'Bruce Willis',       tags:[], era:'classic' },
+    { start:'Alan Ladd',          target:'Mel Gibson',         tags:[], era:'classic' },
+    { start:'Alan Ladd',          target:'Harrison Ford',      tags:[], era:'classic' },
 
     // Irene Dunne (retired 1952)
-    { start:'Irene Dunne',        target:'Jude Law',           tags:[], era:'any' },
-    { start:'Irene Dunne',        target:'Keira Knightley',    tags:[], era:'any' },
-    { start:'Irene Dunne',        target:'Jake Gyllenhaal',    tags:[], era:'any' },
+    { start:'Irene Dunne',        target:'Jude Law',           tags:[], era:'classic' },
+    { start:'Irene Dunne',        target:'Keira Knightley',    tags:[], era:'classic' },
+    { start:'Irene Dunne',        target:'Jake Gyllenhaal',    tags:[], era:'classic' },
 
     // W.C. Fields (died Dec 1946)
-    { start:'W.C. Fields',        target:'Robin Williams',     tags:[], era:'any' },
-    { start:'W.C. Fields',        target:'Eddie Murphy',       tags:[], era:'any' },
-    { start:'W.C. Fields',        target:'Bill Murray',        tags:[], era:'any' },
+    { start:'W.C. Fields',        target:'Robin Williams',     tags:[], era:'classic' },
+    { start:'W.C. Fields',        target:'Eddie Murphy',       tags:[], era:'classic' },
+    { start:'W.C. Fields',        target:'Bill Murray',        tags:[], era:'classic' },
 
     // More classic-to-modern bridges
-    { start:'Katharine Hepburn',  target:'Cate Blanchett',     tags:[], era:'any' },
-    { start:'Katharine Hepburn',  target:'Meryl Streep',       tags:[], era:'any' },
-    { start:'Katharine Hepburn',  target:'Gwyneth Paltrow',    tags:[], era:'any' },
+    { start:'Katharine Hepburn',  target:'Cate Blanchett',     tags:[], era:'classic' },
+    { start:'Katharine Hepburn',  target:'Meryl Streep',       tags:[], era:'classic' },
+    { start:'Katharine Hepburn',  target:'Gwyneth Paltrow',    tags:[], era:'classic' },
 
-    { start:'James Stewart',      target:'Tom Hanks',          tags:[], era:'any' },
-    { start:'James Stewart',      target:'Denzel Washington',  tags:[], era:'any' },
-    { start:'James Stewart',      target:'Kevin Costner',      tags:[], era:'any' },
+    { start:'James Stewart',      target:'Tom Hanks',          tags:[], era:'classic' },
+    { start:'James Stewart',      target:'Denzel Washington',  tags:[], era:'classic' },
+    { start:'James Stewart',      target:'Kevin Costner',      tags:[], era:'classic' },
 
-    { start:'Cary Grant',         target:'George Clooney',     tags:[], era:'any' },
-    { start:'Cary Grant',         target:'Pierce Brosnan',     tags:[], era:'any' },
-    { start:'Cary Grant',         target:'Hugh Grant',         tags:[], era:'any' },
+    { start:'Cary Grant',         target:'George Clooney',     tags:[], era:'classic' },
+    { start:'Cary Grant',         target:'Pierce Brosnan',     tags:[], era:'classic' },
+    { start:'Cary Grant',         target:'Hugh Grant',         tags:[], era:'classic' },
 
-    { start:'Audrey Hepburn',     target:'Julia Roberts',      tags:[], era:'any' },
-    { start:'Audrey Hepburn',     target:'Anne Hathaway',      tags:[], era:'any' },
-    { start:'Audrey Hepburn',     target:'Reese Witherspoon',  tags:[], era:'any' },
+    { start:'Audrey Hepburn',     target:'Julia Roberts',      tags:[], era:'classic' },
+    { start:'Audrey Hepburn',     target:'Anne Hathaway',      tags:[], era:'classic' },
+    { start:'Audrey Hepburn',     target:'Reese Witherspoon',  tags:[], era:'classic' },
 
-    { start:'Gregory Peck',       target:'Liam Neeson',        tags:[], era:'any' },
-    { start:'Gregory Peck',       target:'Anthony Hopkins',    tags:[], era:'any' },
-    { start:'Gregory Peck',       target:'Daniel Day-Lewis',   tags:[], era:'any' },
+    { start:'Gregory Peck',       target:'Liam Neeson',        tags:[], era:'classic' },
+    { start:'Gregory Peck',       target:'Anthony Hopkins',    tags:[], era:'classic' },
+    { start:'Gregory Peck',       target:'Daniel Day-Lewis',   tags:[], era:'classic' },
 
-    { start:'Fred Astaire',       target:'Hugh Jackman',       tags:[], era:'any' },
-    { start:'Fred Astaire',       target:'Gene Hackman',       tags:[], era:'any' },
+    { start:'Fred Astaire',       target:'Hugh Jackman',       tags:[], era:'classic' },
+    { start:'Fred Astaire',       target:'Gene Hackman',       tags:[], era:'classic' },
 
-    { start:'Orson Welles',       target:'John Malkovich',     tags:[], era:'any' },
-    { start:'Orson Welles',       target:'Tim Robbins',        tags:[], era:'any' },
+    { start:'Orson Welles',       target:'John Malkovich',     tags:[], era:'classic' },
+    { start:'Orson Welles',       target:'Tim Robbins',        tags:[], era:'classic' },
 
-    { start:'Marlon Brando',      target:'Johnny Depp',        tags:[], era:'any' },
-    { start:'Marlon Brando',      target:'Jack Nicholson',     tags:[], era:'any' },
-    { start:'Marlon Brando',      target:'Robert De Niro',     tags:[], era:'any' },
+    { start:'Marlon Brando',      target:'Johnny Depp',        tags:[], era:'classic' },
+    { start:'Marlon Brando',      target:'Jack Nicholson',     tags:[], era:'classic' },
+    { start:'Marlon Brando',      target:'Robert De Niro',     tags:[], era:'classic' },
 
-    { start:'Kirk Douglas',       target:'Michael Douglas',    tags:[], era:'any' },
-    { start:'Kirk Douglas',       target:'Jack Nicholson',     tags:[], era:'any' },
+    { start:'Kirk Douglas',       target:'Michael Douglas',    tags:[], era:'classic' },
+    { start:'Kirk Douglas',       target:'Jack Nicholson',     tags:[], era:'classic' },
 
-    { start:'Tony Curtis',        target:'Jamie Lee Curtis',   tags:[], era:'any' },
-    { start:'Tony Curtis',        target:'Jack Lemmon',        tags:[], era:'any' },
+    { start:'Tony Curtis',        target:'Jamie Lee Curtis',   tags:[], era:'classic' },
+    { start:'Tony Curtis',        target:'Jack Lemmon',        tags:[], era:'classic' },
 
-    { start:'Doris Day',          target:'Sandra Bullock',     tags:[], era:'any' },
-    { start:'Doris Day',          target:'Meg Ryan',           tags:[], era:'any' },
+    { start:'Doris Day',          target:'Sandra Bullock',     tags:[], era:'classic' },
+    { start:'Doris Day',          target:'Meg Ryan',           tags:[], era:'classic' },
 
-    { start:'Frank Sinatra',      target:'Brad Pitt',          tags:[], era:'any' },
-    { start:'Frank Sinatra',      target:'George Clooney',     tags:[], era:'any' },
+    { start:'Frank Sinatra',      target:'Brad Pitt',          tags:[], era:'classic' },
+    { start:'Frank Sinatra',      target:'George Clooney',     tags:[], era:'classic' },
+
+    // Modern-only (2000+): no era gap to lean on, so these are picked from
+    // different corners of the industry to keep direct co-stars unlikely.
+    // The runtime TMDB check still verifies/rejects any pair that turns out
+    // to be 1 hop, same as the classic-bridging pairs above.
+    { start:'Saoirse Ronan',      target:'Tom Holland',        tags:[], era:'modern' },
+    { start:'Anya Taylor-Joy',    target:'John Boyega',        tags:[], era:'modern' },
+    { start:'Daniel Kaluuya',     target:'Florence Pugh',      tags:[], era:'modern' },
+    { start:'Ayo Edebiri',        target:'Pedro Pascal',       tags:[], era:'modern' },
+    { start:'Mikey Madison',      target:'Oscar Isaac',        tags:[], era:'modern' },
+    { start:'Sebastian Stan',     target:'Margot Robbie',      tags:[], era:'modern' },
+    { start:'Anthony Mackie',     target:'Saoirse Ronan',      tags:[], era:'modern' },
+    { start:'Jenna Ortega',       target:'Tom Holland',        tags:[], era:'modern' },
+    { start:'Hunter Schafer',     target:'Anthony Mackie',     tags:[], era:'modern' },
+    { start:'Sydney Sweeney',     target:'Daniel Kaluuya',     tags:[], era:'modern' },
+    { start:'Barry Keoghan',      target:'Zendaya',            tags:[], era:'modern' },
+    { start:'Paul Mescal',        target:'Anya Taylor-Joy',    tags:[], era:'modern' },
+    { start:'Rachel Zegler',      target:'Sebastian Stan',     tags:[], era:'modern' },
+    { start:'Storm Reid',         target:'Oscar Isaac',        tags:[], era:'modern' },
+    { start:'Jacob Elordi',       target:'Saoirse Ronan',      tags:[], era:'modern' },
+    { start:'Charles Melton',     target:'Florence Pugh',      tags:[], era:'modern' },
+    { start:'Taylor Russell',     target:'Tom Holland',        tags:[], era:'modern' },
+    { start:'Maya Hawke',         target:'Oscar Isaac',        tags:[], era:'modern' },
+    { start:'Noah Centineo',      target:'Margot Robbie',      tags:[], era:'modern' },
+    { start:'Lakeith Stanfield',  target:'Anya Taylor-Joy',    tags:[], era:'modern' },
+    { start:'Keke Palmer',        target:'Sebastian Stan',     tags:[], era:'modern' },
+    { start:'Halle Bailey',       target:'Tom Holland',        tags:[], era:'modern' },
+    { start:'Aimee Lou Wood',     target:'Pedro Pascal',       tags:[], era:'modern' },
+    { start:'Awkwafina',          target:'Oscar Isaac',        tags:[], era:'modern' },
   ]
 };
 
