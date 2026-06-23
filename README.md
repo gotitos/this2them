@@ -1,4 +1,16 @@
-# This2Them 
+# PLAYBASE
+
+A small hub of browser games, deployed as one Netlify site. The root [index.html](index.html) is the hub; each game lives in its own folder under `games/`.
+
+| Game | Path | Status |
+|---|---|---|
+| This2Them | `games/this2them/` | Live |
+| Untitled Movie Game | — | Planned |
+| Untitled Valorant Game | — | Planned |
+
+---
+
+# This2Them
 
 ## Can you connect two actors through shared films?
 
